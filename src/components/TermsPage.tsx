@@ -233,7 +233,7 @@ export const TermsPage: React.FC<TermsPageProps> = ({ onNavigate }) => {
           </p>
           <div className="p-4 rounded-xl bg-white/[0.02] border border-white/5 space-y-1">
             <p className="font-semibold text-white">LabelFix Legal & Support</p>
-            <p className="text-xs text-white/50">Email: <a href="mailto:support@labelfix.local" className="text-[#c9a57b] hover:underline">support@labelfix.local</a></p>
+            <p className="text-xs text-white/50">Email: <a href="mailto:support.labelfix@gmail.com" className="text-[#c9a57b] hover:underline">support.labelfix@gmail.com</a></p>
             <p className="text-xs text-white/40">You can also visit our <button onClick={() => onNavigate('contact')} className="text-white hover:underline">Contact Page</button>.</p>
           </div>
         </section>

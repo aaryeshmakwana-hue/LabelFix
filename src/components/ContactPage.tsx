@@ -8,8 +8,7 @@ interface ContactPageProps {
 
 export const ContactPage: React.FC<ContactPageProps> = ({ onNavigate }) => {
   const [copied, setCopied] = useState(false);
-  // Neutral contact configuration placeholder
-  const supportEmail = 'support@labelfix.local';
+  const supportEmail = 'support.labelfix@gmail.com';
 
   const handleCopyEmail = () => {
     if (navigator.clipboard) {

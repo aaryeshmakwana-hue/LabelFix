@@ -29,7 +29,7 @@ import { TemplateManagerModal } from './components/TemplateManagerModal';
 import { SettingsModal } from './components/SettingsModal';
 import { AcceptanceTestsModal } from './components/AcceptanceTestsModal';
 import { HelpModal } from './components/HelpModal';
-import { ArrowLeft, Store, Printer } from 'lucide-react';
+import { ArrowLeft, Store } from 'lucide-react';
 
 function MainApp() {
   const { accounts, activeAccount } = useAccounts();

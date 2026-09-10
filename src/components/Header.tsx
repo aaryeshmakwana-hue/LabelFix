@@ -3,7 +3,6 @@ import { useAccounts } from '../context/AccountContext';
 import { isDebugMode } from '../utils/debugMode';
 import { AppRoute } from '../utils/router';
 import {
-  Printer,
   Store,
   ChevronDown,
   Plus,
@@ -88,9 +87,12 @@ export const Header: React.FC<HeaderProps> = ({
               onClick={() => onNavigate('home')}
               className="flex items-center space-x-2.5 sm:space-x-3 text-left group focus:outline-none min-w-0"
             >
-              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-[#c9a57b] to-[#8a6d4d] flex items-center justify-center shadow-lg shadow-[#c9a57b]/10 ring-1 ring-white/10 group-hover:scale-[1.02] transition-transform flex-shrink-0">
-                <Printer className="w-4.5 h-4.5 sm:w-5 sm:h-5 text-black" />
-              </div>
+              <img
+                src="/png_to_svg_converter_by_poper.svg"
+                alt="LabelFix Logo"
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl object-contain shadow-lg shadow-[#c9a57b]/10 ring-1 ring-white/10 group-hover:scale-[1.02] transition-transform flex-shrink-0"
+                referrerPolicy="no-referrer"
+              />
               <div className="min-w-0">
                 <div className="flex items-center space-x-1.5 sm:space-x-2">
                   <span className="font-bold text-base sm:text-lg tracking-wider text-white group-hover:text-[#c9a57b] transition-colors truncate">

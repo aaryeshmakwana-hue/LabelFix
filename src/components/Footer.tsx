@@ -1,5 +1,5 @@
 import React from 'react';
-import { Printer, Store, Crop, Layers, Shield, FileText, ArrowRight } from 'lucide-react';
+import { Store, Crop, Layers, Shield, FileText, ArrowRight } from 'lucide-react';
 import { AppRoute } from '../utils/router';
 
 interface FooterProps {
@@ -16,9 +16,12 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
           {/* Brand Column */}
           <div className="lg:col-span-2 space-y-4">
             <div className="flex items-center space-x-3">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#c9a57b] to-[#8a6d4d] flex items-center justify-center shadow-md shadow-[#c9a57b]/10">
-                <Printer className="w-4.5 h-4.5 text-black" />
-              </div>
+              <img
+                src="/png_to_svg_converter_by_poper.svg"
+                alt="LabelFix Logo"
+                className="w-9 h-9 rounded-xl object-contain shadow-md shadow-[#c9a57b]/10 flex-shrink-0"
+                referrerPolicy="no-referrer"
+              />
               <span className="font-bold text-lg text-white tracking-wider">LabelFix</span>
             </div>
             <p className="text-sm text-white/50 leading-relaxed max-w-sm">
