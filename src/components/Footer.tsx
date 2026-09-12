@@ -51,14 +51,6 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
               </li>
               <li>
                 <button
-                  onClick={() => onNavigate('tools')}
-                  className="hover:text-white transition-colors text-left"
-                >
-                  All Tools
-                </button>
-              </li>
-              <li>
-                <button
                   onClick={() => onNavigate('guides')}
                   className="hover:text-white transition-colors text-left"
                 >
@@ -122,7 +114,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
                   className="hover:text-amber-300 transition-colors text-left flex items-center space-x-1.5"
                 >
                   <Layers className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
-                  <span>Amazon Label Tool</span>
+                  <span>Smart Amazon Label</span>
                 </button>
               </li>
             </ul>

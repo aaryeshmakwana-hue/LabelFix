@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as pdfjsLib from 'pdfjs-dist';
 import { useAccounts } from '../context/AccountContext';
-import { LabelDetectionResult } from '../types';
+import { LabelDetectionResult, ProcessedBatchResult } from '../types';
 import { TARGET_WIDTH_PT, TARGET_HEIGHT_PT } from '../utils/pdfEngine';
 import { isDebugMode } from '../utils/debugMode';
 import {
@@ -17,6 +17,9 @@ import {
   FileText,
   Printer,
   Info,
+  Download,
+  CheckCircle2,
+  RefreshCw,
 } from 'lucide-react';
 
 interface LabelPreviewProps {
@@ -25,6 +28,11 @@ interface LabelPreviewProps {
   currentIndex: number;
   onPageChange: (index: number) => void;
   isLoading: boolean;
+  isProcessing?: boolean;
+  progressCurrent?: number;
+  processedResult?: ProcessedBatchResult | null;
+  onDownload?: () => void;
+  onPrint?: () => void;
 }
 
 export const LabelPreview: React.FC<LabelPreviewProps> = ({
@@ -33,6 +41,11 @@ export const LabelPreview: React.FC<LabelPreviewProps> = ({
   currentIndex,
   onPageChange,
   isLoading,
+  isProcessing,
+  progressCurrent,
+  processedResult,
+  onDownload,
+  onPrint,
 }) => {
   const { activeAccount } = useAccounts();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -487,6 +500,55 @@ export const LabelPreview: React.FC<LabelPreviewProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Immediate Processing Banner Above Preview Canvas */}
+      {isProcessing && (
+        <div className="px-4 py-3 bg-[#0d0d0d] border-b border-[#c9a57b]/30 flex items-center justify-between gap-3 flex-wrap animate-in fade-in duration-150">
+          <div className="flex items-center space-x-2.5 min-w-0">
+            <RefreshCw className="w-4 h-4 animate-spin text-[#c9a57b] flex-shrink-0" />
+            <span className="text-xs font-semibold text-white truncate">
+              Processing your Meesho shipping labels... {progressCurrent && progressCurrent > 0 ? `(${progressCurrent}/${detectionResults.length})` : 'Please wait.'}
+            </span>
+          </div>
+          {detectionResults.length > 0 && progressCurrent ? (
+            <span className="text-xs font-mono font-bold text-[#c9a57b] bg-[#c9a57b]/10 px-2.5 py-0.5 rounded-full border border-[#c9a57b]/20">
+              {Math.round((progressCurrent / Math.max(1, detectionResults.length)) * 100)}%
+            </span>
+          ) : null}
+        </div>
+      )}
+
+      {/* Immediate Download Banner Above Preview Canvas */}
+      {processedResult && onDownload && !isProcessing && (
+        <div className="px-4 py-2.5 bg-emerald-500/10 border-b border-emerald-500/20 flex items-center justify-between gap-3 flex-wrap animate-in fade-in duration-150">
+          <div className="flex items-center space-x-2 min-w-0">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 flex-shrink-0"></span>
+            <span className="text-xs font-semibold text-white truncate">
+              {processedResult.totalCount} Labels Ready for Thermal Printing
+            </span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <button
+              id="preview-top-download-btn"
+              onClick={onDownload}
+              className="px-3.5 py-1.5 bg-[#c9a57b] hover:bg-[#d9b58b] text-black font-bold text-xs rounded-lg flex items-center space-x-1.5 transition-all shadow-sm active:scale-95"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span>Download PDF</span>
+            </button>
+            {onPrint && (
+              <button
+                onClick={onPrint}
+                className="px-2.5 py-1.5 bg-[#1a1a1a] hover:bg-[#222222] text-white border border-white/10 rounded-lg text-xs font-medium flex items-center space-x-1 transition-all"
+                title="Direct Thermal Print"
+              >
+                <Printer className="w-3.5 h-3.5" />
+                <span className="hidden xs:inline">Print</span>
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Main Canvas Stage */}
       <div

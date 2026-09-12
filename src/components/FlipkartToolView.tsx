@@ -16,6 +16,7 @@ import {
   RefreshCw,
   MessageSquare,
   Store,
+  Layers,
   Check,
   CheckCircle2,
   Sliders,
@@ -42,6 +43,8 @@ import {
   getActiveFlipkartMessage,
 } from '../utils/flipkartEngine';
 import { generateSampleFlipkartPDF } from '../utils/sampleFlipkartGenerator';
+import { getFlipkartDownloadFileName } from '../utils/downloadNaming';
+import { ToolExplanationSection } from './ToolExplanationSection';
 
 interface FlipkartToolViewProps {
   onNavigate: (route: AppRoute) => void;
@@ -664,6 +667,19 @@ export const FlipkartToolView: React.FC<FlipkartToolViewProps> = ({ onNavigate }
     }
   };
 
+  // Download cropped PDF using standard LabelFix timestamp naming
+  const handleDownloadCroppedPDF = (url?: string) => {
+    const targetUrl = url || batchResult?.pdfUrl;
+    if (!targetUrl) return;
+    const downloadName = getFlipkartDownloadFileName();
+    const a = document.createElement('a');
+    a.href = targetUrl;
+    a.download = downloadName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
+
   // Canvas rendering effect for PDF page preview
   useEffect(() => {
     let isCancelled = false;
@@ -758,17 +774,24 @@ export const FlipkartToolView: React.FC<FlipkartToolViewProps> = ({ onNavigate }
           className="inline-flex items-center space-x-1.5 text-xs text-white/50 hover:text-white transition-colors"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
-          <span>Back to All Tools</span>
+          <span>Back to Home</span>
         </button>
 
         <div className="flex items-center space-x-2">
-          <span className="hidden sm:inline text-xs text-white/40">Other Marketplaces:</span>
+          <span className="hidden sm:inline text-xs text-white/40">Switch Tool:</span>
           <button
             onClick={() => onNavigate('meesho-promotional-label')}
             className="px-2.5 py-1 rounded-lg bg-[#c9a57b]/10 hover:bg-[#c9a57b]/20 text-[#c9a57b] border border-[#c9a57b]/20 text-xs font-medium flex items-center space-x-1 transition-colors"
           >
             <Store className="w-3 h-3" />
             <span>Meesho Promotional Label</span>
+          </button>
+          <button
+            onClick={() => onNavigate('amazon-label-crop')}
+            className="px-2.5 py-1 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/20 text-xs font-medium flex items-center space-x-1 transition-colors"
+          >
+            <Layers className="w-3 h-3" />
+            <span>Smart Amazon Label</span>
           </button>
         </div>
       </div>
@@ -1222,6 +1245,108 @@ export const FlipkartToolView: React.FC<FlipkartToolViewProps> = ({ onNavigate }
             </div>
           )}
 
+          {/* Download & Print Banner - PROMINENTLY ABOVE PREVIEW CANVAS FOR IMMEDIATE ACCESS */}
+          {batchResult && !isProcessingBatch && !isProcessingCrop && !errorMessage && (
+            <div
+              id="flipkart-top-download-banner"
+              className={`border rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-center justify-between gap-4 transition-all shadow-lg ${
+                hasUnprocessedChanges
+                  ? 'bg-amber-500/10 border-amber-500/30'
+                  : 'bg-[#121212] border-emerald-500/30'
+              }`}
+            >
+              <div className="flex items-center space-x-3 text-left">
+                <div
+                  className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 border ${
+                    hasUnprocessedChanges
+                      ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                      : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                  }`}
+                >
+                  {hasUnprocessedChanges ? (
+                    <AlertTriangle className="w-5 h-5" />
+                  ) : (
+                    <Check className="w-5 h-5" />
+                  )}
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-white">
+                    {hasUnprocessedChanges
+                      ? `Crop changes pending for Page ${currentPageIndex + 1}`
+                      : `${batchResult.successCount} ${batchResult.successCount === 1 ? 'Label' : 'Labels'} Ready for Printing`}
+                  </p>
+                  <p className="text-[11px] text-white/50 mt-0.5">
+                    {hasUnprocessedChanges
+                      ? 'Process crop to update output and enable download.'
+                      : settings.enableMessage && activeMessage
+                      ? `Message: "${activeMessage}"`
+                      : 'Label cropped cleanly for thermal printing'}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row items-center gap-2.5 w-full sm:w-auto">
+                {hasUnprocessedChanges ? (
+                  <>
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        const res = await handleApplyCrop();
+                        if (res && res.pdfUrl) {
+                          handleDownloadCroppedPDF(res.pdfUrl);
+                        }
+                      }}
+                      disabled={isProcessingCrop || isProcessingBatch}
+                      className="w-full sm:w-auto px-5 py-2.5 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-semibold flex items-center justify-center space-x-1.5 shadow-lg shadow-amber-600/20 transition-all cursor-pointer disabled:opacity-50"
+                      title="Apply new crop and download PDF immediately"
+                    >
+                      {isProcessingCrop ? (
+                        <RefreshCw className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Download className="w-4 h-4" />
+                      )}
+                      <span>Download PDF</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={handlePrint}
+                      disabled={hasUnprocessedChanges || isProcessingBatch || isProcessingCrop}
+                      className="w-full sm:w-auto px-4 py-2.5 bg-[#181818] hover:bg-white/10 text-white rounded-xl text-xs font-semibold border border-white/10 flex items-center justify-center space-x-1.5 transition-colors disabled:opacity-40"
+                      title={hasUnprocessedChanges ? 'Apply & Process Crop first to print' : 'Print directly'}
+                    >
+                      <Printer className="w-4 h-4 text-blue-400" />
+                      <span>Print Directly</span>
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      type="button"
+                      id="flipkart-download-btn"
+                      onClick={() => handleDownloadCroppedPDF(batchResult.pdfUrl)}
+                      className="w-full sm:w-auto px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-semibold flex items-center justify-center space-x-1.5 shadow-lg shadow-emerald-600/20 transition-all text-center cursor-pointer active:scale-95"
+                    >
+                      <Download className="w-4 h-4" />
+                      <span>Download PDF</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={handlePrint}
+                      disabled={isProcessingBatch || isProcessingCrop}
+                      className="w-full sm:w-auto px-4 py-2.5 bg-[#181818] hover:bg-white/10 text-white rounded-xl text-xs font-semibold border border-white/10 flex items-center justify-center space-x-1.5 transition-colors disabled:opacity-40 cursor-pointer"
+                      title="Print directly"
+                    >
+                      <Printer className="w-4 h-4 text-blue-400" />
+                      <span>Print Directly</span>
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Preview Canvas Area (Reduced by 10-15% for balanced layout) */}
           <div className="bg-[#0b0b0b] border border-white/5 rounded-2xl p-3 sm:p-3.5 min-h-[240px] sm:min-h-[320px] max-h-[460px] flex items-center justify-center overflow-auto max-w-full">
             {!originalPdfBytes ? (
@@ -1393,109 +1518,11 @@ export const FlipkartToolView: React.FC<FlipkartToolViewProps> = ({ onNavigate }
               </div>
             )}
           </div>
-
-          {/* Download & Print Banner - appears ONLY after processing successfully completes */}
-          {batchResult && !isProcessingBatch && !isProcessingCrop && !errorMessage && (
-            <div className={`border rounded-2xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4 transition-all ${
-              hasUnprocessedChanges
-                ? 'bg-amber-500/10 border-amber-500/30'
-                : 'bg-[#121212] border-emerald-500/30'
-            }`}>
-              <div className="flex items-center space-x-3 text-left">
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 border ${
-                  hasUnprocessedChanges
-                    ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
-                    : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-                }`}>
-                  {hasUnprocessedChanges ? (
-                    <AlertTriangle className="w-5 h-5" />
-                  ) : (
-                    <Check className="w-5 h-5" />
-                  )}
-                </div>
-                <div>
-                  <p className="text-xs font-semibold text-white">
-                    {hasUnprocessedChanges
-                      ? `Crop changes pending for Page ${currentPageIndex + 1}`
-                      : `${batchResult.successCount} ${batchResult.successCount === 1 ? 'Label' : 'Labels'} Ready for Printing`}
-                  </p>
-                  <p className="text-[11px] text-white/50 mt-0.5">
-                    {hasUnprocessedChanges
-                      ? 'Process crop to update output and enable download.'
-                      : settings.enableMessage && activeMessage
-                        ? `Message: "${activeMessage}"`
-                        : 'Label cropped cleanly'}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex flex-col sm:flex-row items-center gap-2.5 w-full sm:w-auto">
-                {hasUnprocessedChanges ? (
-                  <>
-                    <button
-                      type="button"
-                      onClick={async () => {
-                        const res = await handleApplyCrop();
-                        if (res && res.pdfUrl) {
-                          const a = document.createElement('a');
-                          a.href = res.pdfUrl;
-                          a.download = res.fileName || 'flipkart_labels_cropped.pdf';
-                          document.body.appendChild(a);
-                          a.click();
-                          document.body.removeChild(a);
-                        }
-                      }}
-                      disabled={isProcessingCrop || isProcessingBatch}
-                      className="w-full sm:w-auto px-5 py-2.5 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-semibold flex items-center justify-center space-x-1.5 shadow-lg shadow-amber-600/20 transition-all cursor-pointer disabled:opacity-50"
-                      title="Apply new crop and download PDF immediately"
-                    >
-                      {isProcessingCrop ? (
-                        <RefreshCw className="w-4 h-4 animate-spin" />
-                      ) : (
-                        <Download className="w-4 h-4" />
-                      )}
-                      <span>Download PDF</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={handlePrint}
-                      disabled={hasUnprocessedChanges || isProcessingBatch || isProcessingCrop}
-                      className="w-full sm:w-auto px-4 py-2.5 bg-[#181818] hover:bg-white/10 text-white rounded-xl text-xs font-semibold border border-white/10 flex items-center justify-center space-x-1.5 transition-colors disabled:opacity-40"
-                      title={hasUnprocessedChanges ? 'Apply & Process Crop first to print' : 'Print directly'}
-                    >
-                      <Printer className="w-4 h-4 text-blue-400" />
-                      <span>Print Directly</span>
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <a
-                      href={batchResult.pdfUrl}
-                      download={batchResult.fileName || 'flipkart_labels_cropped.pdf'}
-                      className="w-full sm:w-auto px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-semibold flex items-center justify-center space-x-1.5 shadow-lg shadow-emerald-600/20 transition-all text-center"
-                    >
-                      <Download className="w-4 h-4" />
-                      <span>Download PDF</span>
-                    </a>
-
-                    <button
-                      type="button"
-                      onClick={handlePrint}
-                      disabled={isProcessingBatch || isProcessingCrop}
-                      className="w-full sm:w-auto px-4 py-2.5 bg-[#181818] hover:bg-white/10 text-white rounded-xl text-xs font-semibold border border-white/10 flex items-center justify-center space-x-1.5 transition-colors disabled:opacity-40"
-                      title="Print directly"
-                    >
-                      <Printer className="w-4 h-4 text-blue-400" />
-                      <span>Print Directly</span>
-                    </button>
-                  </>
-                )}
-              </div>
-            </div>
-          )}
         </div>
       </div>
+
+      {/* Why This Tool Exists & SEO Content Section */}
+      <ToolExplanationSection tool="flipkart" onNavigate={onNavigate} />
     </div>
   );
 };

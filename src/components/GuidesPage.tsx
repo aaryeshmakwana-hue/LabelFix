@@ -205,14 +205,14 @@ export const GUIDES: GuideItem[] = [
     summary: 'How to pair Amazon shipping labels with invoices and display SKU & Quantity on the label.',
     readTime: '4 min read',
     relatedTool: {
-      name: 'Amazon Label Tool',
+      name: 'Smart Amazon Label',
       route: 'amazon-label-crop',
     },
     directAnswer:
       'Amazon Easy Ship orders often group the shipping label and multi-page tax invoices sequentially. Packing staff need to know which item and quantity belong in the box without flipping through invoice papers. LabelFix extracts SKU and Quantity details directly from paired invoice text and prints formatted (SKU) | Qty text safely into the label whitespace band.',
     steps: [
       'Download your order documents from Amazon Seller Central (Manage Orders → Print Packing Slips & Shipping Labels).',
-      'Upload the Amazon PDF to the Amazon Label Tool in LabelFix.',
+      'Upload the Amazon PDF to the Smart Amazon Label tool in LabelFix.',
       'The engine automatically detects label pages, pairs corresponding invoice pages, and extracts SKU names and quantities.',
       'Review the batch summary table showing Order ID, paired invoice count, and extracted SKU details.',
       'Inspect the preview to see the formatted SKU text positioned inside the designated horizontal blank band.',
@@ -244,14 +244,14 @@ export const GUIDES: GuideItem[] = [
     summary: 'Best practices for Amazon Easy Ship and Self-Ship label formatting.',
     readTime: '3 min read',
     relatedTool: {
-      name: 'Amazon Label Tool',
+      name: 'Smart Amazon Label',
       route: 'amazon-label-crop',
     },
     directAnswer:
       'To prepare Amazon labels efficiently, download combined PDFs from Seller Central and use LabelFix to filter out invoice pages while stamping fulfillment SKUs onto the labels for warehouse pickers.',
     steps: [
       'Export order labels from Amazon Seller Central in PDF format.',
-      'Process the batch in LabelFix Amazon Label Tool.',
+      'Process the batch in LabelFix Smart Amazon Label.',
       'Check the page count reduction (e.g. 50 orders reduced from 100 pages to 50 label pages).',
       'Send to your thermal printer with 1:1 scaling.',
     ],
@@ -279,8 +279,8 @@ export const GUIDES: GuideItem[] = [
     summary: 'Comprehensive hardware, driver, paper, and resolution guide for thermal shipping label printers.',
     readTime: '5 min read',
     relatedTool: {
-      name: 'All Tools',
-      route: 'tools',
+      name: 'LabelFix Home',
+      route: 'home',
     },
     directAnswer:
       'Thermal direct printers (203 DPI standard) heat chemically treated paper rolls to produce labels without liquid ink or toner. For reliable delivery scans, calibrate sensor alignment, set 4×6 inch (100×150 mm) page dimensions, and disable margin offsets.',
@@ -317,8 +317,8 @@ export const GUIDES: GuideItem[] = [
     summary: 'Understanding valid PDF structures, encrypted files, vector formats, and compatibility.',
     readTime: '4 min read',
     relatedTool: {
-      name: 'All Tools',
-      route: 'tools',
+      name: 'LabelFix Home',
+      route: 'home',
     },
     directAnswer:
       'LabelFix is engineered to parse native vector PDF files exported directly from official ecommerce seller portals. Scanned PDFs, password-protected files, or documents modified in photo editors lack selectable vector paths and will fail parsing.',

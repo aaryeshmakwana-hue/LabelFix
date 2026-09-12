@@ -96,9 +96,15 @@ const FAQ_ITEMS: FAQItem[] = [
   // AMAZON
   {
     category: 'amazon',
-    question: 'How does the Amazon Label Tool pair labels with invoices?',
+    question: 'How does the Smart Amazon Label tool pair labels with invoices?',
     answer:
       'The tool dynamically scans the uploaded PDF sequence, identifies shipping label sheets and subsequent multi-page invoices, and pairs them using order identifiers. It then extracts the SKU and quantity details from the invoice table and stamps them cleanly onto the corresponding label.',
+  },
+  {
+    category: 'amazon',
+    question: 'Does Amazon require or endorse adding SKU and quantity to the shipping label?',
+    answer:
+      'No. Adding SKU and quantity is an independent LabelFix convenience feature designed to help online sellers pack orders more efficiently without flipping between invoice pages. Amazon does not officially require or endorse this modification.',
   },
   {
     category: 'amazon',

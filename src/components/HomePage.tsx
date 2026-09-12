@@ -71,7 +71,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate, onOpenHelpModal 
                 className="px-5 py-3.5 bg-[#141414] hover:bg-[#1f1f1f] text-white border border-white/10 font-medium rounded-xl transition-all flex items-center space-x-2 text-sm"
               >
                 <Layers className="w-4 h-4 text-amber-400" />
-                <span>Amazon Label Crop</span>
+                <span>Smart Amazon Label</span>
               </button>
             </div>
           </div>
@@ -114,7 +114,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate, onOpenHelpModal 
                 Meesho Promotional Label
               </h3>
               <p className="text-sm text-white/60 mt-2 leading-relaxed">
-                Add promotional content and your store QR code to Meesho labels.
+                Use available label space for a simple customer review or thank-you message.
               </p>
 
               <div className="mt-5 pt-4 border-t border-white/5 space-y-2 text-xs text-white/50">
@@ -163,7 +163,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate, onOpenHelpModal 
                 Flipkart Label Crop
               </h3>
               <p className="text-sm text-white/60 mt-2 leading-relaxed">
-                Prepare Flipkart labels for clean thermal printing.
+                Crop the label area from your Flipkart PDF so you can work with a cleaner print-ready shipping label.
               </p>
 
               <div className="mt-5 pt-4 border-t border-white/5 space-y-2 text-xs text-white/50">
@@ -209,10 +209,10 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate, onOpenHelpModal 
               </div>
 
               <h3 className="text-lg font-bold text-white group-hover:text-amber-300 transition-colors">
-                Amazon Label Processor
+                Smart Amazon Label
               </h3>
               <p className="text-sm text-white/60 mt-2 leading-relaxed">
-                Pair Amazon shipping labels with invoices and add SKU / Quantity.
+                Keep SKU and quantity visible on the shipping label to make packing easier.
               </p>
 
               <div className="mt-5 pt-4 border-t border-white/5 space-y-2 text-xs text-white/50">

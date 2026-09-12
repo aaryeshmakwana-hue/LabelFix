@@ -133,11 +133,10 @@ export const AllToolsPage: React.FC<AllToolsPageProps> = ({ onNavigate }) => {
             </div>
 
             <h2 className="text-xl font-bold text-white group-hover:text-amber-300 transition-colors">
-              Amazon Label Tool
+              Amazon Label Crop
             </h2>
             <p className="text-sm text-white/60 mt-2.5 leading-relaxed">
-              Process supported Amazon shipping-label and invoice PDFs and place extracted SKU and
-              quantity information in the designated label area.
+              Keep SKU and quantity visible on the shipping label to make packing easier.
             </p>
 
             <div className="mt-6 pt-5 border-t border-white/5 space-y-2.5 text-xs text-white/50">

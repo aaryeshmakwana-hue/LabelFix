@@ -41,22 +41,14 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
   const { accounts, activeAccount, selectAccount } = useAccounts();
   const [accountDropdownOpen, setAccountDropdownOpen] = useState(false);
-  const [toolsDropdownOpen, setToolsDropdownOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const toolsDropdownRef = useRef<HTMLDivElement>(null);
   const accountDropdownRef = useRef<HTMLDivElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
 
   // Close dropdowns on outside click
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (
-        toolsDropdownRef.current &&
-        !toolsDropdownRef.current.contains(e.target as Node)
-      ) {
-        setToolsDropdownOpen(false);
-      }
       if (
         accountDropdownRef.current &&
         !accountDropdownRef.current.contains(e.target as Node)
@@ -81,7 +73,7 @@ export const Header: React.FC<HeaderProps> = ({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 gap-2">
           {/* Logo and Brand */}
-          <div className="flex items-center space-x-3 sm:space-x-6 min-w-0">
+          <div className="flex items-center space-x-3 sm:space-x-5 min-w-0">
             <button
               id="brand-logo-btn"
               onClick={() => onNavigate('home')}
@@ -98,41 +90,19 @@ export const Header: React.FC<HeaderProps> = ({
                   <span className="font-bold text-base sm:text-lg tracking-wider text-white group-hover:text-[#c9a57b] transition-colors truncate">
                     LabelFix
                   </span>
-                  {currentRoute === 'home' && (
-                    <span className="hidden md:inline-block px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider bg-[#c9a57b]/10 text-[#c9a57b] border border-[#c9a57b]/20 rounded-full">
-                      4×6 Thermal Tools
-                    </span>
-                  )}
-                  {currentRoute === 'meesho-promotional-label' && (
-                    <span className="hidden md:inline-block px-2 py-0.5 text-[10px] font-semibold tracking-wider bg-[#c9a57b]/15 text-[#c9a57b] border border-[#c9a57b]/30 rounded-full">
-                      Meesho Promotional Label
-                    </span>
-                  )}
-                  {currentRoute === 'flipkart-label-crop' && (
-                    <span className="hidden md:inline-block px-2 py-0.5 text-[10px] font-semibold tracking-wider bg-blue-500/15 text-blue-400 border border-blue-500/30 rounded-full">
-                      Flipkart Label Crop
-                    </span>
-                  )}
-                  {currentRoute === 'amazon-label-crop' && (
-                    <span className="hidden md:inline-block px-2 py-0.5 text-[10px] font-semibold tracking-wider bg-amber-500/15 text-amber-300 border border-amber-500/30 rounded-full">
-                      Amazon Label Processor
-                    </span>
-                  )}
                 </div>
-                <p className="text-[11px] sm:text-xs text-white/40 font-medium tracking-tight truncate hidden xs:block sm:block">
-                  {currentRoute === 'meesho-promotional-label'
-                    ? 'Upload → Customize → Preview → Print'
-                    : 'Simple Tools for E-commerce Shipping Labels'}
+                <p className="text-[11px] sm:text-xs text-white/40 font-medium tracking-tight truncate hidden xl:block">
+                  Simple Tools for E-commerce Shipping Labels
                 </p>
               </div>
             </button>
 
-            {/* Main Navigation Links (Home, All Tools, Guides, FAQ, About, Contact) */}
-            <nav className="hidden lg:flex items-center space-x-1 pl-2">
+            {/* Main Navigation Links: Home | Meesho Promotional Label | Flipkart Label Crop | Smart Amazon Label | Guides | FAQ */}
+            <nav className="hidden lg:flex items-center space-x-1 pl-1">
               <button
                 id="nav-home-btn"
                 onClick={() => onNavigate('home')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                className={`px-2.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
                   currentRoute === 'home'
                     ? 'text-[#c9a57b] bg-white/5 font-semibold'
                     : 'text-white/60 hover:text-white hover:bg-white/5'
@@ -141,128 +111,46 @@ export const Header: React.FC<HeaderProps> = ({
                 Home
               </button>
 
-              {/* Tools Dropdown & All Tools Link */}
-              <div className="relative" ref={toolsDropdownRef}>
-                <div className="flex items-center">
-                  <button
-                    id="nav-all-tools-btn"
-                    onClick={() => onNavigate('tools')}
-                    className={`px-2.5 py-1.5 rounded-l-lg text-xs font-medium transition-colors ${
-                      currentRoute === 'tools' ||
-                      currentRoute === 'meesho-promotional-label' ||
-                      currentRoute === 'flipkart-label-crop' ||
-                      currentRoute === 'amazon-label-crop'
-                        ? 'text-[#c9a57b] bg-[#c9a57b]/10 font-semibold'
-                        : 'text-white/60 hover:text-white hover:bg-white/5'
-                    }`}
-                  >
-                    All Tools
-                  </button>
-                  <button
-                    id="nav-tools-dropdown-btn"
-                    onClick={() => setToolsDropdownOpen(!toolsDropdownOpen)}
-                    aria-label="Open tools menu"
-                    className={`px-1.5 py-1.5 rounded-r-lg text-xs font-medium transition-colors border-l border-white/5 ${
-                      currentRoute === 'tools' ||
-                      currentRoute === 'meesho-promotional-label' ||
-                      currentRoute === 'flipkart-label-crop' ||
-                      currentRoute === 'amazon-label-crop'
-                        ? 'text-[#c9a57b] bg-[#c9a57b]/10'
-                        : 'text-white/40 hover:text-white hover:bg-white/5'
-                    }`}
-                  >
-                    <ChevronDown className="w-3 h-3" />
-                  </button>
-                </div>
+              <button
+                id="nav-meesho-btn"
+                onClick={() => onNavigate('meesho-promotional-label')}
+                className={`px-2.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
+                  currentRoute === 'meesho-promotional-label'
+                    ? 'text-[#c9a57b] bg-[#c9a57b]/10 font-semibold'
+                    : 'text-white/60 hover:text-white hover:bg-white/5'
+                }`}
+              >
+                Meesho Promotional Label
+              </button>
 
-                {toolsDropdownOpen && (
-                  <div className="absolute left-0 mt-2 w-64 bg-[#141414] rounded-2xl shadow-2xl border border-white/10 p-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150 backdrop-blur-md">
-                    <div className="flex items-center justify-between px-2.5 py-1.5 border-b border-white/5 mb-1">
-                      <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">
-                        Available Tools
-                      </span>
-                      <button
-                        onClick={() => {
-                          onNavigate('tools');
-                          setToolsDropdownOpen(false);
-                        }}
-                        className="text-[10px] text-[#c9a57b] hover:underline"
-                      >
-                        View All
-                      </button>
-                    </div>
+              <button
+                id="nav-flipkart-btn"
+                onClick={() => onNavigate('flipkart-label-crop')}
+                className={`px-2.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
+                  currentRoute === 'flipkart-label-crop'
+                    ? 'text-blue-400 bg-blue-500/10 font-semibold'
+                    : 'text-white/60 hover:text-white hover:bg-white/5'
+                }`}
+              >
+                Flipkart Label Crop
+              </button>
 
-                    {/* Meesho */}
-                    <button
-                      onClick={() => {
-                        onNavigate('meesho-promotional-label');
-                        setToolsDropdownOpen(false);
-                      }}
-                      className={`w-full text-left p-2.5 rounded-xl flex items-start space-x-2.5 transition-colors ${
-                        currentRoute === 'meesho-promotional-label'
-                          ? 'bg-[#c9a57b]/15 text-white'
-                          : 'hover:bg-white/5 text-white/80'
-                      }`}
-                    >
-                      <div className="w-7 h-7 rounded-lg bg-[#c9a57b]/20 text-[#c9a57b] flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <Store className="w-3.5 h-3.5" />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-xs font-semibold text-white">Meesho Promotional Label</p>
-                        <p className="text-[10px] text-white/40 leading-snug">Add store promo & QR code</p>
-                      </div>
-                    </button>
+              <button
+                id="nav-amazon-btn"
+                onClick={() => onNavigate('amazon-label-crop')}
+                className={`px-2.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
+                  currentRoute === 'amazon-label-crop'
+                    ? 'text-amber-300 bg-amber-500/10 font-semibold'
+                    : 'text-white/60 hover:text-white hover:bg-white/5'
+                }`}
+              >
+                Smart Amazon Label
+              </button>
 
-                    {/* Flipkart */}
-                    <button
-                      onClick={() => {
-                        onNavigate('flipkart-label-crop');
-                        setToolsDropdownOpen(false);
-                      }}
-                      className={`w-full text-left p-2.5 rounded-xl flex items-start space-x-2.5 transition-colors ${
-                        currentRoute === 'flipkart-label-crop'
-                          ? 'bg-blue-500/15 text-white'
-                          : 'hover:bg-white/5 text-white/80'
-                      }`}
-                    >
-                      <div className="w-7 h-7 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <Crop className="w-3.5 h-3.5" />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-xs font-semibold text-white">Flipkart Label Crop</p>
-                        <p className="text-[10px] text-white/40 leading-snug">Crop shipping labels for 4×6</p>
-                      </div>
-                    </button>
-
-                    {/* Amazon */}
-                    <button
-                      onClick={() => {
-                        onNavigate('amazon-label-crop');
-                        setToolsDropdownOpen(false);
-                      }}
-                      className={`w-full text-left p-2.5 rounded-xl flex items-start space-x-2.5 transition-colors ${
-                        currentRoute === 'amazon-label-crop'
-                          ? 'bg-amber-500/15 text-white'
-                          : 'hover:bg-white/5 text-white/80'
-                      }`}
-                    >
-                      <div className="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-300 flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <Layers className="w-3.5 h-3.5" />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-xs font-semibold text-white">Amazon Label Tool</p>
-                        <p className="text-[10px] text-white/40 leading-snug">Pair with invoices & add (SKU) | Qty</p>
-                      </div>
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              {/* Guides Link */}
               <button
                 id="nav-guides-btn"
                 onClick={() => onNavigate('guides')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                className={`px-2.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
                   currentRoute === 'guides'
                     ? 'text-[#c9a57b] bg-white/5 font-semibold'
                     : 'text-white/60 hover:text-white hover:bg-white/5'
@@ -271,43 +159,16 @@ export const Header: React.FC<HeaderProps> = ({
                 Guides
               </button>
 
-              {/* FAQ Link */}
               <button
                 id="nav-faq-btn"
                 onClick={() => onNavigate('faq')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                className={`px-2.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
                   currentRoute === 'faq'
                     ? 'text-[#c9a57b] bg-white/5 font-semibold'
                     : 'text-white/60 hover:text-white hover:bg-white/5'
                 }`}
               >
                 FAQ
-              </button>
-
-              {/* About Link */}
-              <button
-                id="nav-about-btn"
-                onClick={() => onNavigate('about')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                  currentRoute === 'about'
-                    ? 'text-[#c9a57b] bg-white/5 font-semibold'
-                    : 'text-white/60 hover:text-white hover:bg-white/5'
-                }`}
-              >
-                About
-              </button>
-
-              {/* Contact Link */}
-              <button
-                id="nav-contact-btn"
-                onClick={() => onNavigate('contact')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                  currentRoute === 'contact'
-                    ? 'text-[#c9a57b] bg-white/5 font-semibold'
-                    : 'text-white/60 hover:text-white hover:bg-white/5'
-                }`}
-              >
-                Contact
               </button>
             </nav>
           </div>
@@ -510,39 +371,19 @@ export const Header: React.FC<HeaderProps> = ({
 
                     <button
                       onClick={() => {
-                        onNavigate('tools');
-                        setMobileMenuOpen(false);
-                      }}
-                      className={`w-full text-left px-3.5 py-2.5 rounded-xl text-sm font-medium flex items-center justify-between ${
-                        currentRoute === 'tools'
-                          ? 'bg-[#c9a57b]/15 text-[#c9a57b] font-semibold'
-                          : 'text-white/70 hover:bg-white/5 hover:text-white'
-                      }`}
-                    >
-                      <span>All Tools</span>
-                    </button>
-                  </div>
-
-                  {/* Marketplace Tools List */}
-                  <div className="py-3 border-b border-white/5 space-y-1">
-                    <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest px-3.5 block mb-1">
-                      Shipping Tools
-                    </span>
-                    <button
-                      onClick={() => {
                         onNavigate('meesho-promotional-label');
                         setMobileMenuOpen(false);
                       }}
                       className={`w-full text-left px-3.5 py-2 rounded-xl text-xs flex items-center space-x-2.5 ${
                         currentRoute === 'meesho-promotional-label'
-                          ? 'bg-[#c9a57b]/15 text-[#c9a57b]'
+                          ? 'bg-[#c9a57b]/15 text-[#c9a57b] font-semibold'
                           : 'text-white/70 hover:bg-white/5 hover:text-white'
                       }`}
                     >
                       <Store className="w-4 h-4 text-[#c9a57b]" />
                       <div>
                         <p className="font-semibold text-white">Meesho Promotional Label</p>
-                        <p className="text-[10px] text-white/40">Add promo QR & message</p>
+                        <p className="text-[10px] text-white/40">Add promo QR & message in whitespace</p>
                       </div>
                     </button>
 
@@ -553,14 +394,14 @@ export const Header: React.FC<HeaderProps> = ({
                       }}
                       className={`w-full text-left px-3.5 py-2 rounded-xl text-xs flex items-center space-x-2.5 ${
                         currentRoute === 'flipkart-label-crop'
-                          ? 'bg-blue-500/15 text-blue-400'
+                          ? 'bg-blue-500/15 text-blue-400 font-semibold'
                           : 'text-white/70 hover:bg-white/5 hover:text-white'
                       }`}
                     >
                       <Crop className="w-4 h-4 text-blue-400" />
                       <div>
                         <p className="font-semibold text-white">Flipkart Label Crop</p>
-                        <p className="text-[10px] text-white/40">Clean crop for 4×6 thermal</p>
+                        <p className="text-[10px] text-white/40">Clean label crop for 4×6 thermal</p>
                       </div>
                     </button>
 
@@ -571,73 +412,69 @@ export const Header: React.FC<HeaderProps> = ({
                       }}
                       className={`w-full text-left px-3.5 py-2 rounded-xl text-xs flex items-center space-x-2.5 ${
                         currentRoute === 'amazon-label-crop'
-                          ? 'bg-amber-500/15 text-amber-300'
+                          ? 'bg-amber-500/15 text-amber-300 font-semibold'
                           : 'text-white/70 hover:bg-white/5 hover:text-white'
                       }`}
                     >
                       <Layers className="w-4 h-4 text-amber-400" />
                       <div>
-                        <p className="font-semibold text-white">Amazon Label Tool</p>
-                        <p className="text-[10px] text-white/40">Add SKU & Qty</p>
+                        <p className="font-semibold text-white">Smart Amazon Label</p>
+                        <p className="text-[10px] text-white/40">Keep SKU & quantity visible</p>
                       </div>
                     </button>
-                  </div>
 
-                  {/* Secondary Pages */}
-                  <div className="pt-3 space-y-1">
                     <button
                       onClick={() => {
                         onNavigate('guides');
                         setMobileMenuOpen(false);
                       }}
-                      className={`w-full text-left px-3.5 py-2 rounded-xl text-xs font-medium ${
+                      className={`w-full text-left px-3.5 py-2.5 rounded-xl text-sm font-medium flex items-center justify-between ${
                         currentRoute === 'guides'
                           ? 'bg-white/10 text-white font-semibold'
                           : 'text-white/70 hover:bg-white/5 hover:text-white'
                       }`}
                     >
-                      Guides
+                      <span>Guides</span>
                     </button>
+
                     <button
                       onClick={() => {
                         onNavigate('faq');
                         setMobileMenuOpen(false);
                       }}
-                      className={`w-full text-left px-3.5 py-2 rounded-xl text-xs font-medium ${
+                      className={`w-full text-left px-3.5 py-2.5 rounded-xl text-sm font-medium flex items-center justify-between ${
                         currentRoute === 'faq'
                           ? 'bg-white/10 text-white font-semibold'
                           : 'text-white/70 hover:bg-white/5 hover:text-white'
                       }`}
                     >
-                      FAQ
+                      <span>FAQ</span>
                     </button>
-                    <button
-                      onClick={() => {
-                        onNavigate('about');
-                        setMobileMenuOpen(false);
-                      }}
-                      className={`w-full text-left px-3.5 py-2 rounded-xl text-xs font-medium ${
-                        currentRoute === 'about'
-                          ? 'bg-white/10 text-white font-semibold'
-                          : 'text-white/70 hover:bg-white/5 hover:text-white'
-                      }`}
-                    >
-                      About
-                    </button>
-                    <button
-                      onClick={() => {
-                        onNavigate('contact');
-                        setMobileMenuOpen(false);
-                      }}
-                      className={`w-full text-left px-3.5 py-2 rounded-xl text-xs font-medium ${
-                        currentRoute === 'contact'
-                          ? 'bg-white/10 text-white font-semibold'
-                          : 'text-white/70 hover:bg-white/5 hover:text-white'
-                      }`}
-                    >
-                      Contact
-                    </button>
-                    <div className="pt-2 border-t border-white/5 flex items-center justify-between px-3.5 text-[11px] text-white/40">
+                  </div>
+
+                  {/* Secondary / Footer Links */}
+                  <div className="pt-3 space-y-1">
+                    <div className="flex flex-wrap items-center justify-between gap-2 px-3.5 text-xs text-white/60">
+                      <button
+                        onClick={() => {
+                          onNavigate('about');
+                          setMobileMenuOpen(false);
+                        }}
+                        className="hover:text-white"
+                      >
+                        About
+                      </button>
+                      <span>•</span>
+                      <button
+                        onClick={() => {
+                          onNavigate('contact');
+                          setMobileMenuOpen(false);
+                        }}
+                        className="hover:text-white"
+                      >
+                        Contact
+                      </button>
+                      <span>•</span>
                       <button
                         onClick={() => {
                           onNavigate('privacy-policy');

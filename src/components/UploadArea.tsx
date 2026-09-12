@@ -1,5 +1,6 @@
 import React, { useRef, useState } from 'react';
 import {
+  Upload,
   UploadCloud,
   FileCheck,
   AlertCircle,
@@ -78,9 +79,9 @@ export const UploadArea: React.FC<UploadAreaProps> = ({
     <div className="bg-[#141414] rounded-2xl border border-white/5 p-6 shadow-sm">
       <div className="flex items-center justify-between mb-3.5">
         <div className="flex items-center space-x-2.5">
-          <span className="flex items-center justify-center w-6 h-6 rounded-full bg-[#c9a57b]/15 text-[#c9a57b] text-xs font-bold">
-            1
-          </span>
+          <div className="w-6 h-6 rounded-lg bg-[#c9a57b]/15 text-[#c9a57b] flex items-center justify-center flex-shrink-0">
+            <Upload className="w-3.5 h-3.5" />
+          </div>
           <h2 className="text-sm font-semibold text-white">
             Upload Original Meesho Label PDF
           </h2>

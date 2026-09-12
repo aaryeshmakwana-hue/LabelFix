@@ -26,6 +26,8 @@ import {
   AmazonLabelPairResult,
   processAmazonPDF,
 } from '../amazon';
+import { getAmazonDownloadFileName } from '../utils/downloadNaming';
+import { ToolExplanationSection } from './ToolExplanationSection';
 
 interface AmazonToolViewProps {
   onNavigate: (route: AppRoute) => void;
@@ -198,9 +200,10 @@ export const AmazonToolView: React.FC<AmazonToolViewProps> = ({
   // Download PDF handler
   const handleDownload = () => {
     if (!batchResult) return;
+    const downloadName = getAmazonDownloadFileName();
     const link = document.createElement('a');
     link.href = batchResult.pdfUrl;
-    link.download = batchResult.fileName;
+    link.download = downloadName;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -315,7 +318,7 @@ export const AmazonToolView: React.FC<AmazonToolViewProps> = ({
           className="inline-flex items-center space-x-1.5 text-xs text-white/50 hover:text-white transition-colors"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
-          <span>Back to All Tools</span>
+          <span>Back to Home</span>
         </button>
 
         <div className="flex flex-wrap items-center gap-2">
@@ -347,7 +350,7 @@ export const AmazonToolView: React.FC<AmazonToolViewProps> = ({
             <div>
               <div className="flex items-center space-x-2.5">
                 <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-                  Amazon Label Processor
+                  Smart Amazon Label
                 </h1>
                 <span className="px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-amber-500/15 text-amber-300 border border-amber-500/30 rounded-full flex items-center space-x-1">
                   <CheckCircle2 className="w-3 h-3 text-amber-400" />
@@ -355,7 +358,7 @@ export const AmazonToolView: React.FC<AmazonToolViewProps> = ({
                 </span>
               </div>
               <p className="text-xs sm:text-sm text-white/50 mt-1">
-                Preserves original Amazon label and adds SKU / Quantity from invoice.
+                Keep SKU and quantity visible on the shipping label to make packing easier.
               </p>
             </div>
           </div>
@@ -485,25 +488,6 @@ export const AmazonToolView: React.FC<AmazonToolViewProps> = ({
                   <div className="text-sm sm:text-base font-bold text-emerald-400">{batchResult.successCount}</div>
                   <div className="text-[9px] sm:text-[10px] text-white/40 uppercase tracking-tight sm:tracking-wider mt-0.5 truncate">Ready</div>
                 </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
-                <button
-                  onClick={handleDownload}
-                  className="py-2.5 px-3 bg-amber-500 hover:bg-amber-400 text-black font-semibold rounded-xl text-xs flex items-center justify-center space-x-1.5 transition-all shadow-md shadow-amber-500/20"
-                >
-                  <Download className="w-3.5 h-3.5" />
-                  <span>Download PDF</span>
-                </button>
-
-                <button
-                  onClick={handleDirectPrint}
-                  className="py-2.5 px-3 bg-[#1a1a1a] hover:bg-[#222222] text-white border border-white/10 font-semibold rounded-xl text-xs flex items-center justify-center space-x-1.5 transition-all"
-                >
-                  <Printer className="w-3.5 h-3.5 text-amber-400" />
-                  <span>Print Directly</span>
-                </button>
               </div>
             </div>
 
@@ -699,6 +683,47 @@ export const AmazonToolView: React.FC<AmazonToolViewProps> = ({
               </div>
             )}
 
+            {/* Immediate Download Banner Above Preview Canvas */}
+            <div
+              id="amazon-top-download-banner"
+              className="bg-[#141414] border border-amber-500/30 rounded-2xl p-3 sm:p-4 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-md"
+            >
+              <div className="flex items-center space-x-2.5 w-full sm:w-auto">
+                <div className="w-8 h-8 rounded-lg bg-amber-500/15 text-amber-300 flex items-center justify-center flex-shrink-0">
+                  <CheckCircle2 className="w-4 h-4" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-semibold text-white truncate">
+                    {batchResult.successCount} Amazon {batchResult.successCount === 1 ? 'Label' : 'Labels'} Ready for Printing
+                  </p>
+                  <p className="text-[11px] text-white/50 truncate">
+                    Invoices excluded • SKUs &amp; Qty inserted cleanly
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-2 w-full sm:w-auto justify-end">
+                <button
+                  type="button"
+                  id="amazon-download-btn"
+                  onClick={handleDownload}
+                  className="flex-1 sm:flex-none px-4 py-2 bg-amber-500 hover:bg-amber-400 text-black font-bold rounded-xl text-xs flex items-center justify-center space-x-1.5 transition-all shadow-md shadow-amber-500/20 active:scale-95 cursor-pointer"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Download PDF</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDirectPrint}
+                  className="px-3 py-2 bg-[#1a1a1a] hover:bg-[#222222] text-white border border-white/10 rounded-xl text-xs flex items-center justify-center space-x-1 transition-all cursor-pointer"
+                  title="Direct Print"
+                >
+                  <Printer className="w-3.5 h-3.5 text-amber-400" />
+                  <span className="hidden sm:inline text-xs font-medium">Print</span>
+                </button>
+              </div>
+            </div>
+
             {/* Canvas Preview Container */}
             <div className="bg-[#0b0b0b] border border-white/10 rounded-2xl p-3 sm:p-4 min-h-[300px] sm:min-h-[440px] max-h-[560px] flex flex-col items-center justify-center relative overflow-auto shadow-inner max-w-full">
               {/* Overlay Indicator if in processed mode */}
@@ -734,6 +759,9 @@ export const AmazonToolView: React.FC<AmazonToolViewProps> = ({
           </div>
         </div>
       )}
+
+      {/* Why This Tool Exists & SEO Content Section */}
+      <ToolExplanationSection tool="amazon" onNavigate={onNavigate} />
     </div>
   );
 };

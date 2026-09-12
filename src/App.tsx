@@ -7,6 +7,7 @@ import { generateSampleMeeshoPDF } from './utils/sampleMeeshoGenerator';
 import { isDebugMode } from './utils/debugMode';
 import { useAppRoute, AppRoute, scrollToTop } from './utils/router';
 
+import { DEFAULT_ACCOUNTS } from './data/defaultAccounts';
 import { Header } from './components/Header';
 import { HomePage } from './components/HomePage';
 import { FlipkartToolView } from './components/FlipkartToolView';
@@ -23,13 +24,14 @@ import { Sidebar } from './components/Sidebar';
 import { UploadArea } from './components/UploadArea';
 import { SafetyChecklist } from './components/SafetyChecklist';
 import { LabelPreview } from './components/LabelPreview';
-import { BatchProcessor } from './components/BatchProcessor';
 import { AccountManagerModal } from './components/AccountManagerModal';
 import { TemplateManagerModal } from './components/TemplateManagerModal';
 import { SettingsModal } from './components/SettingsModal';
 import { AcceptanceTestsModal } from './components/AcceptanceTestsModal';
 import { HelpModal } from './components/HelpModal';
-import { ArrowLeft, Store } from 'lucide-react';
+import { ArrowLeft, Store, RefreshCw, CheckCircle2, Download, Printer } from 'lucide-react';
+import { ToolExplanationSection } from './components/ToolExplanationSection';
+import { getMeeshoDownloadFileName } from './utils/downloadNaming';
 
 function MainApp() {
   const { accounts, activeAccount } = useAccounts();
@@ -73,63 +75,15 @@ function MainApp() {
     scrollToTop();
   }, [currentRoute]);
 
-  // Update browser document title and meta description based on active route
+  // Keep the browser title and meta description stable as LabelFix across all routes
   useEffect(() => {
-    let title = 'LabelFix — Simple Tools for E-commerce Shipping Labels';
-    let description = 'Simple tools for e-commerce shipping labels: thermal-ready 4×6 label processing, promotional overlays, and marketplace cropping for Meesho, Flipkart, and Amazon sellers.';
-
-    switch (currentRoute) {
-      case 'tools':
-        title = 'Ecommerce Shipping Label PDF Tools | LabelFix';
-        description = "Use LabelFix's ecommerce shipping-label PDF tools for Meesho, Flipkart, and Amazon workflows. Prepare, crop, process, download, and print supported label PDFs.";
-        break;
-      case 'guides':
-        title = 'Ecommerce Shipping Label Guides | LabelFix';
-        description = 'Practical guides for preparing, cropping, printing, and working with ecommerce shipping-label PDFs.';
-        break;
-      case 'faq':
-        title = 'LabelFix FAQ | Shipping Label PDF Questions';
-        description = 'Find answers to common questions about LabelFix, PDF uploads, Meesho labels, Flipkart labels, Amazon labels, processing, downloads, and printing.';
-        break;
-      case 'about':
-        title = 'About LabelFix | Ecommerce Shipping Label Tools';
-        description = 'Learn about LabelFix, a simple collection of tools designed to help ecommerce sellers prepare shipping-label PDFs more efficiently.';
-        break;
-      case 'contact':
-        title = 'Contact LabelFix | Support';
-        description = 'Contact LabelFix for support, feedback, bug reports, and questions about ecommerce shipping-label PDF tools.';
-        break;
-      case 'privacy-policy':
-        title = 'Privacy Policy | LabelFix';
-        description = 'Learn how LabelFix handles uploaded PDF files, personal information, cookies, analytics, advertising, third-party services, security, and user privacy.';
-        break;
-      case 'terms':
-        title = 'Terms of Service | LabelFix';
-        description = 'Read the LabelFix Terms of Service covering tool usage, uploaded files, processing limitations, acceptable use, intellectual property, disclaimers, and service availability.';
-        break;
-      case 'meesho-promotional-label':
-        title = 'Meesho Promotional Label — LabelFix';
-        description = 'Prepare supported Meesho shipping labels and add your configured promotional QR content in the designated label whitespace.';
-        break;
-      case 'flipkart-label-crop':
-        title = 'Flipkart Label Crop — LabelFix';
-        description = 'Prepare supported Flipkart shipping-label PDFs using the dedicated crop workflow while preserving the label content.';
-        break;
-      case 'amazon-label-crop':
-        title = 'Amazon Label Tool — LabelFix';
-        description = 'Process supported Amazon shipping-label and invoice PDFs and place extracted SKU and quantity information in the designated label area.';
-        break;
-      case 'home':
-      default:
-        title = 'LabelFix — Simple Tools for E-commerce Shipping Labels';
-        description = 'Prepare shipping-label PDFs more easily with practical tools for Meesho, Flipkart, and Amazon workflows.';
-        break;
-    }
-
-    document.title = title;
+    document.title = 'LabelFix — Simple Tools for E-commerce Shipping Labels';
     const metaDesc = document.querySelector('meta[name="description"]');
     if (metaDesc) {
-      metaDesc.setAttribute('content', description);
+      metaDesc.setAttribute(
+        'content',
+        'Simple tools for e-commerce shipping labels: thermal-ready 4×6 label processing, promotional overlays, and marketplace cropping for Meesho, Flipkart, and Amazon sellers.'
+      );
     }
   }, [currentRoute]);
 
@@ -141,18 +95,25 @@ function MainApp() {
     }
   }, [accounts.length, currentRoute]);
 
-  // Re-run detection on active account changes so overlay reflects selected store QR & message
+  // Re-run detection and auto-processing when active account/template changes so output reflects latest settings
   useEffect(() => {
     if (!pdfBytes) return;
 
-    // Skip if this exact PDF and account combination was already analyzed in handlePdfLoaded
-    if (pdfBytes === lastAnalyzedBytesRef.current && activeAccount === lastAnalyzedAccountRef.current) {
+    // Skip if this exact PDF and account combination was already analyzed and processed
+    if (
+      pdfBytes === lastAnalyzedBytesRef.current &&
+      activeAccount === lastAnalyzedAccountRef.current
+    ) {
       return;
     }
     lastAnalyzedBytesRef.current = pdfBytes;
     lastAnalyzedAccountRef.current = activeAccount;
 
-    const reanalyze = async () => {
+    const accountToUse = activeAccount || DEFAULT_ACCOUNTS[0];
+
+    const reanalyzeAndProcess = async () => {
+      setIsProcessing(true);
+      setProgressCurrent(0);
       try {
         const loadingTask = pdfjsLib.getDocument({ data: pdfBytes.slice() });
         const pdfDoc = await loadingTask.promise;
@@ -161,25 +122,48 @@ function MainApp() {
         const results: LabelDetectionResult[] = [];
         for (let i = 1; i <= numPages; i++) {
           const page = await pdfDoc.getPage(i);
-          const detection = await analyzePDFPage(page, i - 1, activeAccount);
+          const detection = await analyzePDFPage(page, i - 1, accountToUse);
           results.push(detection);
         }
         setDetectionResults(results);
+
+        const result = await build4x6PrintReadyPDF(
+          pdfBytes,
+          accountToUse,
+          (current, _total) => {
+            setProgressCurrent(current);
+          }
+        );
+        setProcessedResult(result);
       } catch (err) {
-        console.error('Error reanalyzing PDF with new account:', err);
+        console.error('Error re-processing PDF with updated account settings:', err);
+      } finally {
+        setIsProcessing(false);
       }
     };
 
-    reanalyze();
+    reanalyzeAndProcess();
   }, [activeAccount, pdfBytes]);
 
   const handlePdfLoaded = async (bytes: Uint8Array, fileName: string) => {
+    // Revoke previous URL to prevent memory leaks
+    if (processedResult?.pdfUrl) {
+      try {
+        URL.revokeObjectURL(processedResult.pdfUrl);
+      } catch (_) {}
+    }
+
     setIsLoading(true);
+    setIsProcessing(true);
+    setProgressCurrent(0);
     setPdfBytes(bytes);
     setPdfFileName(fileName);
     setProcessedResult(null);
     setCurrentIndex(0);
 
+    const accountToUse = activeAccount || DEFAULT_ACCOUNTS[0];
+
+    // Mark as analyzed immediately so activeAccount useEffect does not duplicate processing
     lastAnalyzedBytesRef.current = bytes;
     lastAnalyzedAccountRef.current = activeAccount;
 
@@ -191,15 +175,26 @@ function MainApp() {
       const results: LabelDetectionResult[] = [];
       for (let i = 1; i <= numPages; i++) {
         const page = await pdfDoc.getPage(i);
-        const detection = await analyzePDFPage(page, i - 1, activeAccount);
+        const detection = await analyzePDFPage(page, i - 1, accountToUse);
         results.push(detection);
       }
-
       setDetectionResults(results);
+
+      // Automatic processing: invoke the existing build4x6PrintReadyPDF engine
+      const result = await build4x6PrintReadyPDF(
+        bytes,
+        accountToUse,
+        (current, _total) => {
+          setProgressCurrent(current);
+        }
+      );
+
+      setProcessedResult(result);
     } catch (err) {
-      console.error('Error parsing loaded PDF:', err);
+      console.error('Error processing loaded Meesho PDF:', err);
     } finally {
       setIsLoading(false);
+      setIsProcessing(false);
     }
   };
 
@@ -214,37 +209,27 @@ function MainApp() {
       await handlePdfLoaded(sampleBytes, name);
     } catch (err) {
       console.error('Error generating sample:', err);
-    } finally {
       setIsLoading(false);
+      setIsProcessing(false);
     }
   };
 
-  const handleProcessAll = async () => {
-    if (!pdfBytes) return;
-    if (!activeAccount) {
-      alert('Please configure or select a Meesho store account first.');
-      setAccountModalOpen(true);
-      return;
-    }
+  const handleDownloadMeesho = () => {
+    if (!processedResult?.pdfUrl) return;
+    const downloadName = getMeeshoDownloadFileName(activeAccount?.accountName);
+    const a = document.createElement('a');
+    a.href = processedResult.pdfUrl;
+    a.download = downloadName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
 
-    setIsProcessing(true);
-    setProgressCurrent(0);
-
-    try {
-      const result = await build4x6PrintReadyPDF(
-        pdfBytes,
-        activeAccount,
-        (current, _total) => {
-          setProgressCurrent(current);
-        }
-      );
-
-      setProcessedResult(result);
-    } catch (err) {
-      console.error('Error processing batch PDF:', err);
-      alert('Failed to process label batch. Please check your PDF file.');
-    } finally {
-      setIsProcessing(false);
+  const handlePrintMeesho = () => {
+    if (!processedResult?.pdfUrl) return;
+    const printWindow = window.open(processedResult.pdfUrl, '_blank');
+    if (printWindow) {
+      printWindow.focus();
     }
   };
 
@@ -325,7 +310,7 @@ function MainApp() {
                 id="back-to-tools-btn"
                 onClick={() => navigateTo('home')}
                 className="p-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-white/50 hover:text-white transition-colors"
-                title="Back to All Tools"
+                title="Back to Home"
               >
                 <ArrowLeft className="w-4 h-4" />
               </button>
@@ -352,9 +337,9 @@ function MainApp() {
             </div>
           </div>
 
-          {/* Existing Meesho 3-Column Workspace */}
+          {/* Meesho Workspace Layout: Sidebar + Main Area (Upload → Status/Actions → Preview) */}
           <div className="flex flex-col lg:flex-row gap-6 items-start">
-            {/* Left Sidebar: Account Details, Store Link, QR code */}
+            {/* Left Sidebar: Account Details, Store Link, QR code, Customization */}
             <Sidebar
               onOpenAccountModal={(editMode = false) => {
                 setAccountEditMode(editMode);
@@ -366,12 +351,12 @@ function MainApp() {
               loadedCount={detectionResults.length}
             />
 
-            {/* Center Column: Upload + Safety Checklist (debug only) + Batch Actions */}
+            {/* Main Area: Upload → Processing Status / Action Bar → Live Preview */}
             <div className="flex-1 w-full space-y-5 min-w-0">
               {/* Step 1: Upload PDF */}
               <UploadArea
                 onFileLoaded={handlePdfLoaded}
-                isLoading={isLoading}
+                isLoading={isLoading || isProcessing}
                 loadedFileName={pdfFileName}
                 totalLabelsCount={detectionResults.length}
               />
@@ -385,29 +370,88 @@ function MainApp() {
                 />
               )}
 
-              {/* Step 2: Process All & Output Actions */}
-              <BatchProcessor
-                totalLabels={detectionResults.length}
-                isProcessing={isProcessing}
-                progressCurrent={progressCurrent}
-                processedResult={processedResult}
-                onProcessAll={handleProcessAll}
-                onPreviewFirst={() => setCurrentIndex(0)}
-                detectionResults={detectionResults}
-              />
-            </div>
+              {/* Processing Status Bar — Immediately Above Preview */}
+              {isProcessing && (
+                <div className="bg-[#141414] border border-[#c9a57b]/30 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm animate-in fade-in">
+                  <div className="flex items-center space-x-3 min-w-0">
+                    <div className="w-10 h-10 rounded-xl bg-[#c9a57b]/10 text-[#c9a57b] flex items-center justify-center flex-shrink-0">
+                      <RefreshCw className="w-5 h-5 animate-spin" />
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="text-sm sm:text-base font-bold text-white truncate">
+                        Processing your Meesho shipping labels...
+                      </h3>
+                      <p className="text-xs text-white/50 truncate">
+                        {progressCurrent > 0 && detectionResults.length > 0
+                          ? `Formatting label ${progressCurrent} of ${detectionResults.length} with promotional QR...`
+                          : 'Analyzing layout and generating print-ready 4×6 thermal PDF...'}
+                      </p>
+                    </div>
+                  </div>
+                  {detectionResults.length > 0 && (
+                    <span className="text-xs font-mono font-bold text-[#c9a57b] bg-[#c9a57b]/10 px-3 py-1.5 rounded-full border border-[#c9a57b]/20 flex-shrink-0">
+                      {Math.round((progressCurrent / Math.max(1, detectionResults.length)) * 100)}%
+                    </span>
+                  )}
+                </div>
+              )}
 
-            {/* Right Column: Live 4×6 Canvas Label Preview */}
-            <div className="w-full lg:w-[420px] xl:w-[460px] flex-shrink-0">
+              {/* Successful Processing Action Bar — Immediately Above Preview */}
+              {processedResult && !isProcessing && (
+                <div className="bg-emerald-500/10 border border-emerald-500/25 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm animate-in fade-in">
+                  <div className="flex items-center space-x-3 min-w-0">
+                    <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center flex-shrink-0">
+                      <CheckCircle2 className="w-5 h-5" />
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="text-sm sm:text-base font-bold text-white truncate">
+                        {processedResult.totalCount} {processedResult.totalCount === 1 ? 'Label' : 'Labels'} Ready for Thermal Printing
+                      </h3>
+                      <p className="text-xs text-white/50 truncate">
+                        Vector 4×6 print-ready PDF generated with store QR & promotional message
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-2.5 w-full sm:w-auto flex-shrink-0">
+                    <button
+                      id="meesho-main-download-btn"
+                      onClick={handleDownloadMeesho}
+                      className="flex-1 sm:flex-none px-4 py-2.5 bg-[#c9a57b] hover:bg-[#d9b58b] text-black font-bold text-xs rounded-xl flex items-center justify-center space-x-2 transition-all shadow-sm active:scale-95 whitespace-nowrap cursor-pointer"
+                    >
+                      <Download className="w-4 h-4 flex-shrink-0" />
+                      <span>Download PDF</span>
+                    </button>
+                    <button
+                      id="meesho-main-print-btn"
+                      onClick={handlePrintMeesho}
+                      className="flex-1 sm:flex-none px-4 py-2.5 bg-white/5 hover:bg-white/10 text-white border border-white/10 font-semibold text-xs rounded-xl flex items-center justify-center space-x-2 transition-all active:scale-95 whitespace-nowrap cursor-pointer"
+                      title="Direct Thermal Print"
+                    >
+                      <Printer className="w-4 h-4 flex-shrink-0" />
+                      <span>Print Directly</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Live 4×6 Canvas Label Preview */}
               <LabelPreview
                 pdfBytes={pdfBytes}
                 detectionResults={detectionResults}
                 currentIndex={currentIndex}
                 onPageChange={(idx) => setCurrentIndex(idx)}
                 isLoading={isLoading}
+                isProcessing={isProcessing}
+                progressCurrent={progressCurrent}
+                processedResult={processedResult}
+                onDownload={handleDownloadMeesho}
+                onPrint={handlePrintMeesho}
               />
             </div>
           </div>
+
+          {/* Why This Tool Exists & SEO Content Section */}
+          <ToolExplanationSection toolType="meesho" onNavigate={navigateTo} />
         </main>
       )}
 

@@ -2,6 +2,7 @@ import React from 'react';
 import confetti from 'canvas-confetti';
 import { useAccounts } from '../context/AccountContext';
 import { ProcessedBatchResult, LabelDetectionResult } from '../types';
+import { getMeeshoDownloadFileName } from '../utils/downloadNaming';
 import {
   Download,
   Printer,
@@ -38,9 +39,10 @@ export const BatchProcessor: React.FC<BatchProcessorProps> = ({
 
   const handleDownload = () => {
     if (!processedResult) return;
+    const downloadName = getMeeshoDownloadFileName(activeAccount?.accountName);
     const link = document.createElement('a');
     link.href = processedResult.pdfUrl;
-    link.download = processedResult.fileName;
+    link.download = downloadName;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
