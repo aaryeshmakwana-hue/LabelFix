@@ -1,5 +1,6 @@
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import * as pdfjsLib from 'pdfjs-dist';
+import './pdfWorker';
 import {
   MeeshoAccount,
   LabelDetectionResult,
@@ -9,9 +10,8 @@ import {
 } from '../types';
 import { generateQRCodeBytes } from './qrGenerator';
 
-// Configure pdfjs-dist worker
-// Use unpkg or cdnjs fallback if local worker fails or standard cdn worker URL
-if (typeof window !== 'undefined') {
+// Configure pdfjs-dist worker (uses local worker via ./pdfWorker)
+if (typeof window !== 'undefined' && !pdfjsLib.GlobalWorkerOptions.workerSrc) {
   pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version || '4.10.38'}/pdf.worker.min.mjs`;
 }
 
@@ -1031,16 +1031,21 @@ function cleanTextForThermalFont(text: string, _enableEmojis?: boolean): string 
 export async function build4x6PrintReadyPDF(
   originalPdfBytes: Uint8Array,
   account: MeeshoAccount,
-  onProgress?: (current: number, total: number) => void
+  onProgress?: (current: number, total: number) => void,
+  precomputedDetections?: LabelDetectionResult[]
 ): Promise<ProcessedBatchResult> {
-  // 1. Load original PDF in pdfjs for analysis
-  const loadingTask = pdfjsLib.getDocument({ data: originalPdfBytes.slice() });
-  const pdfJsDoc = await loadingTask.promise;
-  const numPages = pdfJsDoc.numPages;
-
-  // 2. Load original PDF in pdf-lib for embedding/overlaying
+  // Load original PDF in pdf-lib for embedding/overlaying
   const srcPdfDoc = await PDFDocument.load(originalPdfBytes);
   const outPdfDoc = await PDFDocument.create();
+  const numPages = srcPdfDoc.getPageCount();
+
+  // If precomputed results are missing or incomplete, lazily load pdfjs to analyze
+  let pdfJsDoc: any = null;
+  const needsAnalysis = !precomputedDetections || precomputedDetections.length < numPages;
+  if (needsAnalysis) {
+    const loadingTask = pdfjsLib.getDocument({ data: originalPdfBytes.slice() });
+    pdfJsDoc = await loadingTask.promise;
+  }
 
   // Generate QR Code bytes for the active account
   const qrBytes = await generateQRCodeBytes(account.storeLink || 'https://meesho.com', {
@@ -1062,8 +1067,14 @@ export async function build4x6PrintReadyPDF(
       onProgress(pageIdx, numPages);
     }
 
-    const pdfJsPage = await pdfJsDoc.getPage(pageIdx);
-    const detection = await analyzePDFPage(pdfJsPage, pageIdx - 1, account);
+    let detection: LabelDetectionResult;
+    if (precomputedDetections && precomputedDetections[pageIdx - 1]) {
+      // Reuse precomputed analysis from upload - zero duplicate rendering or visual ink scans
+      detection = precomputedDetections[pageIdx - 1];
+    } else {
+      const pdfJsPage = await pdfJsDoc.getPage(pageIdx);
+      detection = await analyzePDFPage(pdfJsPage, pageIdx - 1, account);
+    }
     labelResults.push(detection);
 
     // Create target 4x6 inch page (288 x 432 pt)

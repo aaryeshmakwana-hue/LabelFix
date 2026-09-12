@@ -52,6 +52,7 @@ export const LabelPreview: React.FC<LabelPreviewProps> = ({
   const containerRef = useRef<HTMLDivElement | null>(null);
   const activeRenderTaskRef = useRef<any>(null);
   const activeLoadingTaskRef = useRef<any>(null);
+  const cachedPdfDocRef = useRef<{ bytes: Uint8Array; doc: any } | null>(null);
 
   const [zoomLevel, setZoomLevel] = useState<number>(1.0);
   const [viewMode, setViewMode] = useState<'processed' | 'original' | 'split'>('processed');
@@ -60,6 +61,18 @@ export const LabelPreview: React.FC<LabelPreviewProps> = ({
 
   const currentDetection = detectionResults[currentIndex];
   const totalPages = detectionResults.length;
+
+  // Cleanup cached document proxy on unmount
+  useEffect(() => {
+    return () => {
+      if (cachedPdfDocRef.current?.doc) {
+        try {
+          cachedPdfDocRef.current.doc.destroy();
+        } catch (_) {}
+        cachedPdfDocRef.current = null;
+      }
+    };
+  }, []);
 
   useEffect(() => {
     let isCancelled = false;
@@ -79,9 +92,20 @@ export const LabelPreview: React.FC<LabelPreviewProps> = ({
       }
 
       try {
-        const loadingTask = pdfjsLib.getDocument({ data: pdfBytes.slice() });
-        activeLoadingTaskRef.current = loadingTask;
-        const pdfDoc = await loadingTask.promise;
+        // Reuse cached PDFDocumentProxy across page changes and zoom changes
+        let pdfDoc = cachedPdfDocRef.current?.bytes === pdfBytes ? cachedPdfDocRef.current.doc : null;
+        if (!pdfDoc) {
+          if (cachedPdfDocRef.current?.doc) {
+            try {
+              cachedPdfDocRef.current.doc.destroy();
+            } catch (_) {}
+          }
+          const loadingTask = pdfjsLib.getDocument({ data: pdfBytes.slice() });
+          activeLoadingTaskRef.current = loadingTask;
+          pdfDoc = await loadingTask.promise;
+          if (isCancelled) return;
+          cachedPdfDocRef.current = { bytes: pdfBytes, doc: pdfDoc };
+        }
         if (isCancelled) return;
 
         const page = await pdfDoc.getPage(currentIndex + 1);

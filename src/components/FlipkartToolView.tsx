@@ -79,6 +79,26 @@ export const FlipkartToolView: React.FC<FlipkartToolViewProps> = ({ onNavigate }
   const previewCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const originalCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const activeRenderTaskRef = useRef<any>(null);
+  const cachedOrigDocRef = useRef<{ bytes: Uint8Array; doc: any } | null>(null);
+  const cachedCroppedDocRef = useRef<{ url: string; doc: any } | null>(null);
+
+  // Clean up cached PDF.js document proxies on unmount
+  useEffect(() => {
+    return () => {
+      if (cachedOrigDocRef.current?.doc) {
+        try {
+          cachedOrigDocRef.current.doc.destroy();
+        } catch (_) {}
+        cachedOrigDocRef.current = null;
+      }
+      if (cachedCroppedDocRef.current?.doc) {
+        try {
+          cachedCroppedDocRef.current.doc.destroy();
+        } catch (_) {}
+        cachedCroppedDocRef.current = null;
+      }
+    };
+  }, []);
 
   // Advanced Crop Mode and coordinates state (PDF points)
   const [isAdvancedOpen, setIsAdvancedOpen] = useState<boolean>(false);
@@ -289,7 +309,7 @@ export const FlipkartToolView: React.FC<FlipkartToolViewProps> = ({ onNavigate }
       saveFlipkartSettings(updatedSettings);
 
       // Re-run batch crop with authoritative crops
-      const result = await runBatchCrop(originalPdfBytes, updatedCrops, updatedSettings, totalPages, fileName);
+      const result = await runBatchCrop(originalPdfBytes, updatedCrops, updatedSettings, totalPages, fileName, pageResults);
 
       // Update pageResults for current page
       setPageResults((prev) => {
@@ -477,8 +497,8 @@ export const FlipkartToolView: React.FC<FlipkartToolViewProps> = ({ onNavigate }
         });
       }
 
-      // Auto-generate cropped PDF batch for instant preview and download
-      await runBatchCrop(data, initialCrops, docSettings, pagesCount, name);
+      // Auto-generate cropped PDF batch reusing precomputed results
+      await runBatchCrop(data, initialCrops, docSettings, pagesCount, name, results);
     } catch (err: any) {
       console.error('Error loading Flipkart PDF:', err);
       setErrorMessage(
@@ -497,7 +517,8 @@ export const FlipkartToolView: React.FC<FlipkartToolViewProps> = ({ onNavigate }
     crops: FlipkartActiveCrop[],
     currentSettings: FlipkartCropSettings,
     total: number,
-    _baseName: string
+    _baseName: string,
+    precomputedResults?: FlipkartCropResult[]
   ): Promise<FlipkartBatchResult | null> => {
     setIsProcessingBatch(true);
     setProgressCurrent(0);
@@ -527,7 +548,8 @@ export const FlipkartToolView: React.FC<FlipkartToolViewProps> = ({ onNavigate }
             setProgressCurrent(current);
             setProgressTotal(tot);
           }
-        }
+        },
+        precomputedResults
       );
 
       // Ensure final progress state is 100%
@@ -698,10 +720,20 @@ export const FlipkartToolView: React.FC<FlipkartToolViewProps> = ({ onNavigate }
       }
 
       try {
-        // Render Original Page Cleanly (without debug bounding boxes)
+        // Render Original Page Cleanly (reusing cached PDFDocumentProxy)
         if (originalPdfBytes && originalCanvasRef.current && viewMode === 'original') {
-          const loadingTaskOrig = pdfjsLib.getDocument({ data: originalPdfBytes.slice() });
-          const origPdf = await loadingTaskOrig.promise;
+          let origPdf = cachedOrigDocRef.current?.bytes === originalPdfBytes ? cachedOrigDocRef.current.doc : null;
+          if (!origPdf) {
+            if (cachedOrigDocRef.current?.doc) {
+              try {
+                cachedOrigDocRef.current.doc.destroy();
+              } catch (_) {}
+            }
+            const loadingTaskOrig = pdfjsLib.getDocument({ data: originalPdfBytes.slice() });
+            origPdf = await loadingTaskOrig.promise;
+            if (isCancelled) return;
+            cachedOrigDocRef.current = { bytes: originalPdfBytes, doc: origPdf };
+          }
           if (isCancelled) return;
           const origPage = await origPdf.getPage(currentPageIndex + 1);
           if (isCancelled) return;
@@ -722,10 +754,20 @@ export const FlipkartToolView: React.FC<FlipkartToolViewProps> = ({ onNavigate }
           }
         }
 
-        // Render Cropped Output Page Cleanly
+        // Render Cropped Output Page Cleanly (reusing cached PDFDocumentProxy)
         if (batchResult && previewCanvasRef.current && viewMode === 'cropped') {
-          const loadingTaskCropped = pdfjsLib.getDocument({ url: batchResult.pdfUrl });
-          const croppedPdf = await loadingTaskCropped.promise;
+          let croppedPdf = cachedCroppedDocRef.current?.url === batchResult.pdfUrl ? cachedCroppedDocRef.current.doc : null;
+          if (!croppedPdf) {
+            if (cachedCroppedDocRef.current?.doc) {
+              try {
+                cachedCroppedDocRef.current.doc.destroy();
+              } catch (_) {}
+            }
+            const loadingTaskCropped = pdfjsLib.getDocument({ url: batchResult.pdfUrl });
+            croppedPdf = await loadingTaskCropped.promise;
+            if (isCancelled) return;
+            cachedCroppedDocRef.current = { url: batchResult.pdfUrl, doc: croppedPdf };
+          }
           if (isCancelled) return;
           const safePageNum = Math.min(currentPageIndex + 1, croppedPdf.numPages);
           const croppedPage = await croppedPdf.getPage(safePageNum);

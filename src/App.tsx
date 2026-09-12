@@ -132,7 +132,8 @@ function MainApp() {
           accountToUse,
           (current, _total) => {
             setProgressCurrent(current);
-          }
+          },
+          results
         );
         setProcessedResult(result);
       } catch (err) {
@@ -180,13 +181,14 @@ function MainApp() {
       }
       setDetectionResults(results);
 
-      // Automatic processing: invoke the existing build4x6PrintReadyPDF engine
+      // Automatic processing: invoke the existing build4x6PrintReadyPDF engine reusing precomputed results
       const result = await build4x6PrintReadyPDF(
         bytes,
         accountToUse,
         (current, _total) => {
           setProgressCurrent(current);
-        }
+        },
+        results
       );
 
       setProcessedResult(result);

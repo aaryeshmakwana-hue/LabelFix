@@ -1,4 +1,5 @@
 import * as pdfjsLib from 'pdfjs-dist';
+import '../utils/pdfWorker';
 import {
   AmazonBatchResult,
   AmazonLabelOrderResult,
@@ -198,11 +199,13 @@ export async function processAmazonPDF(
 
     // Step B: Load shipping-label page and determine blank band coordinates
     const labelPage = await pdfDoc.getPage(labelPageNum);
+    const labelItems = extractedPages[group.labelPageIndex]?.items;
     const orderResult = await analyzeAmazonLabelBand(
       labelPage,
       orderIdx,
       invoiceData,
-      group.labelPageIndex
+      group.labelPageIndex,
+      labelItems
     );
     orderResults.push(orderResult);
   }

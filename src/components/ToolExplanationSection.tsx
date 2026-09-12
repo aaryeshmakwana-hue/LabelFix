@@ -34,9 +34,9 @@ export const ToolExplanationSection: React.FC<ToolExplanationSectionProps> = ({
 
   if (activeTool === 'meesho') {
     return (
-      <section id="why-meesho-tool" className="mt-12 pt-10 border-t border-white/10 space-y-10">
+      <section id="why-meesho-tool" className="w-full mt-12 pt-10 border-t border-white/10 space-y-10">
         {/* Header & Benefit Statement */}
-        <div className="max-w-3xl">
+        <div className="w-full">
           <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-[#c9a57b]/10 border border-[#c9a57b]/20 text-[#c9a57b] text-xs font-semibold mb-3">
             <Store className="w-3.5 h-3.5" />
             <span>Why This Tool Exists</span>
@@ -47,7 +47,7 @@ export const ToolExplanationSection: React.FC<ToolExplanationSectionProps> = ({
           <p className="text-base text-[#c9a57b] font-medium mt-2">
             Add a short promotional or customer message to your Meesho shipping label without changing the original label information.
           </p>
-          <div className="space-y-3 mt-4 text-sm text-white/70 leading-relaxed">
+          <div className="space-y-3 mt-4 text-sm text-white/70 leading-relaxed max-w-4xl">
             <p>
               The Meesho Promotional Label tool allows ecommerce sellers to add a short promotional, review, or store follow message directly into the available whitespace on their Meesho shipping-label PDFs. Standard labels downloaded from the Meesho Supplier Panel often leave empty blank space below the invoice section, and this tool helps you put that space to productive use.
             </p>
@@ -61,7 +61,7 @@ export const ToolExplanationSection: React.FC<ToolExplanationSectionProps> = ({
         </div>
 
         {/* 2-Column Problem & Solution Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
           <div className="bg-[#121212] border border-white/5 rounded-2xl p-6 space-y-3">
             <div className="flex items-center space-x-2 text-white font-semibold text-sm">
               <AlertCircle className="w-4 h-4 text-amber-400 flex-shrink-0" />
@@ -90,7 +90,7 @@ export const ToolExplanationSection: React.FC<ToolExplanationSectionProps> = ({
         </div>
 
         {/* Practical Benefits Checklist */}
-        <div className="bg-[#141414] border border-white/5 rounded-2xl p-6 sm:p-8">
+        <div className="bg-[#141414] border border-white/5 rounded-2xl p-6 sm:p-8 w-full">
           <h3 className="text-base font-bold text-white mb-4">
             Practical Benefits for Meesho Sellers
           </h3>
@@ -126,11 +126,11 @@ export const ToolExplanationSection: React.FC<ToolExplanationSectionProps> = ({
         </div>
 
         {/* Step-by-Step Flow */}
-        <div className="space-y-4">
+        <div className="space-y-4 w-full">
           <h3 className="text-base font-bold text-white">
             How to Use Meesho Promotional Label
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="bg-[#111111] border border-white/5 rounded-xl p-4 space-y-2">
               <div className="w-6 h-6 rounded-full bg-[#c9a57b]/20 text-[#c9a57b] font-bold text-xs flex items-center justify-center">
                 1
@@ -171,7 +171,7 @@ export const ToolExplanationSection: React.FC<ToolExplanationSectionProps> = ({
         </div>
 
         {/* Helpful Cross-Links */}
-        <div className="bg-[#111111] border border-white/5 rounded-xl p-5 flex flex-wrap items-center justify-between gap-4">
+        <div className="bg-[#111111] border border-white/5 rounded-xl p-5 flex flex-wrap items-center justify-between gap-4 w-full">
           <div className="space-y-1">
             <span className="text-xs font-semibold text-white">Need more details or printer instructions?</span>
             <p className="text-[11px] text-white/50">Explore related seller guides and thermal printer configuration tips.</p>
@@ -201,9 +201,9 @@ export const ToolExplanationSection: React.FC<ToolExplanationSectionProps> = ({
 
   if (activeTool === 'flipkart') {
     return (
-      <section id="why-flipkart-tool" className="mt-12 pt-10 border-t border-white/10 space-y-10">
+      <section id="why-flipkart-tool" className="w-full mt-12 pt-10 border-t border-white/10 space-y-10">
         {/* Header & Benefit Statement */}
-        <div className="max-w-3xl">
+        <div className="w-full">
           <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold mb-3">
             <Crop className="w-3.5 h-3.5" />
             <span>Why This Tool Exists</span>
@@ -214,7 +214,7 @@ export const ToolExplanationSection: React.FC<ToolExplanationSectionProps> = ({
           <p className="text-base text-blue-400 font-medium mt-2">
             Crop the shipping label from your Flipkart PDF to isolate the label area for clean 4×6 thermal printing.
           </p>
-          <div className="space-y-3 mt-4 text-sm text-white/70 leading-relaxed">
+          <div className="space-y-3 mt-4 text-sm text-white/70 leading-relaxed max-w-4xl">
             <p>
               Flipkart shipping-label PDFs often contain the shipping label together with tax invoices or unused page space on a single A4 sheet. Standard 4×6 thermal label printers only require the shipping-label portion, not the entire A4 page.
             </p>
@@ -228,7 +228,7 @@ export const ToolExplanationSection: React.FC<ToolExplanationSectionProps> = ({
         </div>
 
         {/* 2-Column Problem & Solution Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
           <div className="bg-[#121212] border border-white/5 rounded-2xl p-6 space-y-3">
             <div className="flex items-center space-x-2 text-white font-semibold text-sm">
               <AlertCircle className="w-4 h-4 text-amber-400 flex-shrink-0" />
@@ -257,7 +257,7 @@ export const ToolExplanationSection: React.FC<ToolExplanationSectionProps> = ({
         </div>
 
         {/* Practical Benefits Checklist */}
-        <div className="bg-[#141414] border border-white/5 rounded-2xl p-6 sm:p-8">
+        <div className="bg-[#141414] border border-white/5 rounded-2xl p-6 sm:p-8 w-full">
           <h3 className="text-base font-bold text-white mb-4">
             Key Benefits for Flipkart Sellers
           </h3>
@@ -293,11 +293,11 @@ export const ToolExplanationSection: React.FC<ToolExplanationSectionProps> = ({
         </div>
 
         {/* Step-by-Step Flow */}
-        <div className="space-y-4">
+        <div className="space-y-4 w-full">
           <h3 className="text-base font-bold text-white">
             How to Crop Flipkart Shipping Labels
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="bg-[#111111] border border-white/5 rounded-xl p-4 space-y-2">
               <div className="w-6 h-6 rounded-full bg-blue-500/20 text-blue-400 font-bold text-xs flex items-center justify-center">
                 1
@@ -338,7 +338,7 @@ export const ToolExplanationSection: React.FC<ToolExplanationSectionProps> = ({
         </div>
 
         {/* Helpful Cross-Links */}
-        <div className="bg-[#111111] border border-white/5 rounded-xl p-5 flex flex-wrap items-center justify-between gap-4">
+        <div className="bg-[#111111] border border-white/5 rounded-xl p-5 flex flex-wrap items-center justify-between gap-4 w-full">
           <div className="space-y-1">
             <span className="text-xs font-semibold text-white">Looking for other marketplace utilities?</span>
             <p className="text-[11px] text-white/50">Easily switch between independent tools for each marketplace.</p>
@@ -368,9 +368,9 @@ export const ToolExplanationSection: React.FC<ToolExplanationSectionProps> = ({
 
   // activeTool === 'amazon'
   return (
-    <section id="why-amazon-tool" className="mt-12 pt-10 border-t border-white/10 space-y-10">
+    <section id="why-amazon-tool" className="w-full mt-12 pt-10 border-t border-white/10 space-y-10">
       {/* Header & Benefit Statement */}
-      <div className="max-w-3xl">
+      <div className="w-full">
         <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs font-semibold mb-3">
           <Layers className="w-3.5 h-3.5 text-amber-400" />
           <span>Why This Tool Exists</span>
@@ -381,7 +381,7 @@ export const ToolExplanationSection: React.FC<ToolExplanationSectionProps> = ({
         <p className="text-base text-amber-300 font-medium mt-2">
           Keep SKU and quantity visible on the shipping label to make packing easier.
         </p>
-        <div className="space-y-3 mt-4 text-sm text-white/70 leading-relaxed">
+        <div className="space-y-3 mt-4 text-sm text-white/70 leading-relaxed max-w-4xl">
           <p>
             The Smart Amazon Label tool processes Amazon shipping-label PDFs and pairs shipping-label pages with their related invoice pages to extract SKU and item quantity information.
           </p>
@@ -395,7 +395,7 @@ export const ToolExplanationSection: React.FC<ToolExplanationSectionProps> = ({
       </div>
 
       {/* 2-Column Problem & Solution Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
         <div className="bg-[#121212] border border-white/5 rounded-2xl p-6 space-y-3">
           <div className="flex items-center space-x-2 text-white font-semibold text-sm">
             <AlertCircle className="w-4 h-4 text-amber-400 flex-shrink-0" />
@@ -424,7 +424,7 @@ export const ToolExplanationSection: React.FC<ToolExplanationSectionProps> = ({
       </div>
 
       {/* Practical Benefits Checklist */}
-      <div className="bg-[#141414] border border-white/5 rounded-2xl p-6 sm:p-8">
+      <div className="bg-[#141414] border border-white/5 rounded-2xl p-6 sm:p-8 w-full">
         <h3 className="text-base font-bold text-white mb-4">
           Key Benefits for Amazon Sellers
         </h3>
@@ -460,11 +460,11 @@ export const ToolExplanationSection: React.FC<ToolExplanationSectionProps> = ({
       </div>
 
       {/* Step-by-Step Flow */}
-      <div className="space-y-4">
+      <div className="space-y-4 w-full">
         <h3 className="text-base font-bold text-white">
           How to Add SKU and Quantity to Amazon Shipping Labels
         </h3>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="bg-[#111111] border border-white/5 rounded-xl p-4 space-y-2">
             <div className="w-6 h-6 rounded-full bg-amber-500/20 text-amber-300 font-bold text-xs flex items-center justify-center">
               1
@@ -505,7 +505,7 @@ export const ToolExplanationSection: React.FC<ToolExplanationSectionProps> = ({
       </div>
 
       {/* Helpful Cross-Links */}
-      <div className="bg-[#111111] border border-white/5 rounded-xl p-5 flex flex-wrap items-center justify-between gap-4">
+      <div className="bg-[#111111] border border-white/5 rounded-xl p-5 flex flex-wrap items-center justify-between gap-4 w-full">
         <div className="space-y-1">
           <span className="text-xs font-semibold text-white">Want to learn more about label workflows?</span>
           <p className="text-[11px] text-white/50">Read detailed guides and answers to frequently asked questions.</p>

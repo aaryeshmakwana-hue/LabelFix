@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import * as pdfjsLib from 'pdfjs-dist';
+import '../utils/pdfWorker';
 import {
   Layers,
   ArrowLeft,
@@ -61,14 +62,28 @@ export const AmazonToolView: React.FC<AmazonToolViewProps> = ({
   const activeRenderTaskRef = useRef<any>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const activePdfUrlRef = useRef<string | null>(null);
+  const cachedProcessedDocRef = useRef<{ url: string; doc: any } | null>(null);
+  const cachedSourceDocRef = useRef<{ bytes: Uint8Array; doc: any } | null>(null);
 
-  // Clean up object URLs on unmount
+  // Clean up object URLs and cached document proxies on unmount
   useEffect(() => {
     return () => {
       if (activePdfUrlRef.current) {
         try {
           URL.revokeObjectURL(activePdfUrlRef.current);
         } catch (_) {}
+      }
+      if (cachedProcessedDocRef.current?.doc) {
+        try {
+          cachedProcessedDocRef.current.doc.destroy();
+        } catch (_) {}
+        cachedProcessedDocRef.current = null;
+      }
+      if (cachedSourceDocRef.current?.doc) {
+        try {
+          cachedSourceDocRef.current.doc.destroy();
+        } catch (_) {}
+        cachedSourceDocRef.current = null;
       }
     };
   }, []);
@@ -230,9 +245,19 @@ export const AmazonToolView: React.FC<AmazonToolViewProps> = ({
 
       try {
         if (viewMode === 'processed' && batchResult) {
-          // Render from processed PDF: 1 page per shipping label, with overlay already added
-          const loadingTask = pdfjsLib.getDocument({ url: batchResult.pdfUrl });
-          const pdfDoc = await loadingTask.promise;
+          // Render from processed PDF: 1 page per shipping label, with overlay already added (reusing cached PDFDocumentProxy)
+          let pdfDoc = cachedProcessedDocRef.current?.url === batchResult.pdfUrl ? cachedProcessedDocRef.current.doc : null;
+          if (!pdfDoc) {
+            if (cachedProcessedDocRef.current?.doc) {
+              try {
+                cachedProcessedDocRef.current.doc.destroy();
+              } catch (_) {}
+            }
+            const loadingTask = pdfjsLib.getDocument({ url: batchResult.pdfUrl });
+            pdfDoc = await loadingTask.promise;
+            if (isCancelled) return;
+            cachedProcessedDocRef.current = { url: batchResult.pdfUrl, doc: pdfDoc };
+          }
           if (isCancelled) return;
 
           const targetPageNum = Math.min(selectedPairIndex + 1, pdfDoc.numPages);
@@ -255,9 +280,19 @@ export const AmazonToolView: React.FC<AmazonToolViewProps> = ({
             await activeRenderTaskRef.current.promise;
           }
         } else if (originalPdfBytes && activePair) {
-          // Render from original source PDF using dynamic page numbers (not parity!)
-          const loadingTask = pdfjsLib.getDocument({ data: originalPdfBytes.slice() });
-          const pdfDoc = await loadingTask.promise;
+          // Render from original source PDF using dynamic page numbers (reusing cached PDFDocumentProxy)
+          let pdfDoc = cachedSourceDocRef.current?.bytes === originalPdfBytes ? cachedSourceDocRef.current.doc : null;
+          if (!pdfDoc) {
+            if (cachedSourceDocRef.current?.doc) {
+              try {
+                cachedSourceDocRef.current.doc.destroy();
+              } catch (_) {}
+            }
+            const loadingTask = pdfjsLib.getDocument({ data: originalPdfBytes.slice() });
+            pdfDoc = await loadingTask.promise;
+            if (isCancelled) return;
+            cachedSourceDocRef.current = { bytes: originalPdfBytes, doc: pdfDoc };
+          }
           if (isCancelled) return;
 
           let targetPageNum = activePair.labelPageNumber;

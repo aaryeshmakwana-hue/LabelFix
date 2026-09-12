@@ -1,5 +1,6 @@
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import * as pdfjsLib from 'pdfjs-dist';
+import './pdfWorker';
 import {
   FlipkartCropResult,
   FlipkartCropSettings,
@@ -15,7 +16,7 @@ export const TARGET_WIDTH_PT = 288;  // 4 inches
 export const TARGET_HEIGHT_PT = 432; // 6 inches
 
 /**
- * Configure worker for pdfjs-dist if in browser environment
+ * Configure worker for pdfjs-dist if in browser environment (uses local worker via ./pdfWorker)
  */
 if (typeof window !== 'undefined' && !pdfjsLib.GlobalWorkerOptions.workerSrc) {
   pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version || '4.10.38'}/pdf.worker.min.mjs`;
@@ -1102,14 +1103,20 @@ export async function buildFlipkartCroppedPDF(
   originalPdfBytes: Uint8Array,
   settings: FlipkartCropSettings,
   authoritativeCrops?: FlipkartCropBox[] | Record<number, FlipkartCropBox>,
-  onProgress?: (current: number, total: number) => void
+  onProgress?: (current: number, total: number) => void,
+  precomputedResults?: FlipkartCropResult[]
 ): Promise<FlipkartBatchResult> {
-  const loadingTask = pdfjsLib.getDocument({ data: originalPdfBytes.slice() });
-  const pdfJsDoc = await loadingTask.promise;
-  const numPages = pdfJsDoc.numPages;
-
   const srcPdfDoc = await PDFDocument.load(originalPdfBytes);
   const outPdfDoc = await PDFDocument.create();
+  const numPages = srcPdfDoc.getPageCount();
+
+  // If precomputed results are missing or incomplete, lazily load pdfJsDoc
+  let pdfJsDoc: any = null;
+  const needsPdfJs = !precomputedResults || precomputedResults.length < numPages;
+  if (needsPdfJs) {
+    const loadingTask = pdfjsLib.getDocument({ data: originalPdfBytes.slice() });
+    pdfJsDoc = await loadingTask.promise;
+  }
 
   const helveticaFont = await outPdfDoc.embedFont(StandardFonts.Helvetica);
 
@@ -1125,12 +1132,43 @@ export async function buildFlipkartCroppedPDF(
       onProgress(pageIdx, numPages);
     }
 
-    const pdfJsPage = await pdfJsDoc.getPage(pageIdx);
     const pageOverrideCrop = Array.isArray(authoritativeCrops)
       ? authoritativeCrops[pageIdx - 1]
       : authoritativeCrops?.[pageIdx - 1];
 
-    const detection = await analyzeFlipkartPage(pdfJsPage, pageIdx - 1, settings, pageOverrideCrop);
+    let detection: FlipkartCropResult;
+    if (precomputedResults && precomputedResults[pageIdx - 1]) {
+      const pre = precomputedResults[pageIdx - 1];
+      if (pageOverrideCrop) {
+        // If an explicit manual crop was applied, use manual crop bounds
+        const cropW = Math.round(pageOverrideCrop.width);
+        const cropH = Math.round(pageOverrideCrop.height);
+        detection = {
+          ...pre,
+          cropBounds: {
+            x: Math.round(pageOverrideCrop.x),
+            y: Math.round(pageOverrideCrop.y),
+            width: cropW,
+            height: cropH,
+          },
+          labelTopY: Math.round(pageOverrideCrop.y),
+          labelBottomY: Math.round(pageOverrideCrop.y + cropH),
+          labelLeftX: Math.round(pageOverrideCrop.x),
+          labelRightX: Math.round(pageOverrideCrop.x + cropW),
+          status: 'ready',
+          statusMessage: 'Manual crop applied.',
+        };
+      } else {
+        detection = pre;
+      }
+    } else {
+      if (!pdfJsDoc) {
+        const loadingTask = pdfjsLib.getDocument({ data: originalPdfBytes.slice() });
+        pdfJsDoc = await loadingTask.promise;
+      }
+      const pdfJsPage = await pdfJsDoc.getPage(pageIdx);
+      detection = await analyzeFlipkartPage(pdfJsPage, pageIdx - 1, settings, pageOverrideCrop);
+    }
     pageResults.push(detection);
 
     if (detection.status === 'error' && !pageOverrideCrop) {

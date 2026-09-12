@@ -21,7 +21,8 @@ export async function analyzeAmazonLabelBand(
   labelPdfPage: any,
   orderIndex: number,
   invoiceData: AmazonInvoiceData,
-  labelPageIndex: number
+  labelPageIndex: number,
+  preExtractedItems?: PageTextItem[]
 ): Promise<AmazonLabelOrderResult> {
   const labelPageNumber = labelPageIndex + 1;
   const viewport = labelPdfPage.getViewport({ scale: 1.0 });
@@ -29,16 +30,21 @@ export async function analyzeAmazonLabelBand(
   const originalHeight = viewport.height;
 
   // Extract text elements directly in PDF coordinates (from left, from bottom)
-  const textContent = await labelPdfPage.getTextContent();
-  const items: PageTextItem[] = textContent.items
-    .filter((item: any) => item && typeof item.str === 'string' && item.str.trim().length > 0)
-    .map((item: any) => ({
-      str: item.str.trim(),
-      x: item.transform[4], // Points from left
-      y: item.transform[5], // Points from page bottom (PDF-lib system)
-      width: item.width,
-      height: item.height || 10,
-    }));
+  let items: PageTextItem[];
+  if (preExtractedItems && preExtractedItems.length > 0) {
+    items = preExtractedItems;
+  } else {
+    const textContent = await labelPdfPage.getTextContent();
+    items = textContent.items
+      .filter((item: any) => item && typeof item.str === 'string' && item.str.trim().length > 0)
+      .map((item: any) => ({
+        str: item.str.trim(),
+        x: item.transform[4], // Points from left
+        y: item.transform[5], // Points from page bottom (PDF-lib system)
+        width: item.width,
+        height: item.height || 10,
+      }));
+  }
 
   // 1. Locate horizontal center of shipping label content
   let centerPdfX = Math.round(originalWidth / 2);
